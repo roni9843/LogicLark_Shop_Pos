@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
-import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
-import { hsdLogo } from './dummy-logo';
+import {Button, StyleSheet, Text, View} from 'react-native';
+import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
+import {hsdLogo} from './dummy-logo';
 
 const SamplePrint = () => {
   return (
@@ -40,18 +40,198 @@ const SamplePrint = () => {
       <View style={styles.btn}>
         <Button
           onPress={async () => {
-            await BluetoothEscposPrinter.printerUnderLine(2);
-            await BluetoothEscposPrinter.printText('Prawito Hudoro\r\n', {
-              encoding: 'GBK',
-              codepage: 0,
-              widthtimes: 0,
-              heigthtimes: 0,
-              fonttype: 1,
-            });
-            await BluetoothEscposPrinter.printerUnderLine(0);
+            // Begin the transaction with some space
+            await BluetoothEscposPrinter.printText('\r\n\r\n', {});
+
+            // Print the header of the receipt
+            await BluetoothEscposPrinter.printerAlign(
+              BluetoothEscposPrinter.ALIGN.CENTER,
+            );
+            await BluetoothEscposPrinter.printText(
+              'LAZZ PHARMA LIMITED\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText('Rajshahi Branch\r\n', {});
+            await BluetoothEscposPrinter.printText(
+              '159/A, Kadırgonj, Rajshahi-6100\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'Mobile: 01766765252\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              '------------------------------------------\r\n',
+              {},
+            );
+
+            // Print the transaction information
+            await BluetoothEscposPrinter.setBlob(0);
+            await BluetoothEscposPrinter.printText(
+              'Date: 2024/02/05 19:31    Bill No: 2402050043777\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'Cashier: Emon            Pay Mode: American Express\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText('Duplicate copy\r\n', {});
+            await BluetoothEscposPrinter.printText(
+              '------------------------------------------\r\n',
+              {},
+            );
+
+            // Print the items purchased
+            await BluetoothEscposPrinter.printText(
+              'QTY  ITEM DESCRIPTION        PRICE   TOTAL\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              '------------------------------------------\r\n',
+              {},
+            );
+            // Example for one item, repeat for each item
+            await BluetoothEscposPrinter.printText(
+              '1    AMERICAN HARVEST        270.00  270.00\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              '     PROMEGRAN DRINK 290ML\r\n',
+              {},
+            );
+            // ... print other items
+
+            // Print the summary of the transaction
+            await BluetoothEscposPrinter.printText(
+              '------------------------------------------\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'Subtotal:                             1445.00\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'Discount:                               72.25\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'VAT:                                    72.25\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              '------------------------------------------\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'Grand Total:                         1445.00\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              '------------------------------------------\r\n',
+              {},
+            );
+
+            // Print customer loyalty points information
+            await BluetoothEscposPrinter.printText(
+              'Customer Name: TANZILUR\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'Previous points:       125\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              "Today's points:         14\r\n",
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'Total points:          139\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              '------------------------------------------\r\n',
+              {},
+            );
+
+            // Print the footer of the receipt
+            await BluetoothEscposPrinter.printText(
+              'Thank you for shopping with us!\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'Please visit again.\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              'Powered By: Taj Tech Ltd. (01774020251)\r\n',
+              {},
+            );
+            await BluetoothEscposPrinter.printText(
+              '------------------------------------------\r\n',
+              {},
+            );
+
+            // End the transaction with some space
             await BluetoothEscposPrinter.printText('\r\n\r\n\r\n', {});
           }}
-          title="Print UnderLine"
+          title="Print UnderLine 333"
+        />
+      </View>
+
+      <View style={styles.btn}>
+        <Button
+          onPress={async () => {
+            `[HEADER]
+          ------------------------------------------
+                        LAZZ PHARMA LIMITED
+                         Rajshahi Branch
+                    159/A, Kadırgonj, Rajshahi-6100
+                          Mobile: 01766765252
+          ------------------------------------------
+          Date: 2024/02/05 19:31    Bill No: 2402050043777
+          Cashier: Emon            Pay Mode: American Express
+          Duplicate copy
+          
+          [ITEMS]
+          ------------------------------------------
+          QTY  ITEM DESCRIPTION        PRICE   TOTAL
+          ------------------------------------------
+          1    AMERICAN HARVEST        270.00  270.00
+               PROMEGRAN DRINK 290ML
+          1    NIVEA SOFT CREAM JAR    125.00  125.00
+               25ML
+          1    KELLOGGS CHOCOS         430.00  430.00
+               375 GM
+          1    LAYS INDIAS AMERICAN    220.00  220.00
+               CREAM & ONION 90GM
+          1    KF ALOO PURI            140.00  140.00
+               10 PCS
+          1    KF CHICKEN STRIPS       260.00  260.00
+               (12PCS)
+          
+          [SUMMARY]
+          ------------------------------------------
+          Subtotal:                             1445.00
+          Discount:                               72.25
+          VAT:                                    72.25
+          ------------------------------------------
+          Grand Total:                         1445.00
+          ------------------------------------------
+          Customer Name: TANZILUR
+          Previous points:       125
+          Today's points:         14
+          Total points:          139
+          ------------------------------------------
+          
+          [FOOTER]
+          Thank you for shopping with us!
+          Please visit again.
+          
+          Powered By: Taj Tech Ltd. (01774020251)
+          ------------------------------------------
+          `;
+          }}
+          title="Print UnderLine 22"
         />
       </View>
 
@@ -62,142 +242,87 @@ const SamplePrint = () => {
             let columnWidths = [8, 20, 20];
             try {
               await BluetoothEscposPrinter.printText('\r\n\r\n\r\n', {});
-              await BluetoothEscposPrinter.printPic(hsdLogo, { width: 250, left: 150 });
-              await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
-              await BluetoothEscposPrinter.printColumn(
-                [48],
-                [BluetoothEscposPrinter.ALIGN.CENTER],
-                ['Jl. Brigjen Saptadji Hadiprawira No.93'],
+              await BluetoothEscposPrinter.printerAlign(
+                BluetoothEscposPrinter.ALIGN.CENTER,
+              );
+              // Assuming hsdLogo is the logo you want to print, adjust according to your actual logo variable.
+              await BluetoothEscposPrinter.printPic(hsdLogo, {
+                width: 250,
+                left: 150,
+              });
+
+              // Center-align store information.
+              await BluetoothEscposPrinter.printText(
+                'Lazz Pharma Limited\r\n',
                 {},
               );
-              await BluetoothEscposPrinter.printColumn(
-                [32],
-                [BluetoothEscposPrinter.ALIGN.CENTER],
-                ['https://xfood.id'],
+              await BluetoothEscposPrinter.printText('Rajshahi branch\r\n', {});
+              await BluetoothEscposPrinter.printText(
+                '159/A, Kadırgonj, Rajshahi-6100\r\n',
                 {},
               );
               await BluetoothEscposPrinter.printText(
-                '================================================',
+                'Mobile: 01766765252\r\n',
                 {},
               );
-              await BluetoothEscposPrinter.printColumn(
-                [24, 24],
-                [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-                ['Customer', 'Prawito Hudoro'],
-                {},
-              );
-              await BluetoothEscposPrinter.printColumn(
-                [24, 24],
-                [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-                ['Packaging', 'Iya'],
-                {},
-              );
-              await BluetoothEscposPrinter.printColumn(
-                [24, 24],
-                [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-                ['Delivery', 'Ambil Sendiri'],
-                {},
-              );
+
+              // Print dotted line.
               await BluetoothEscposPrinter.printText(
-                '================================================',
+                '----------------------------------------------\r\n',
                 {},
               );
-              await BluetoothEscposPrinter.printText('Products\r\n', { widthtimes: 1 });
-              await BluetoothEscposPrinter.printText(
-                '================================================',
-                {},
-              );
+
+              // Print transaction information like date, time, customer name, etc.
+              // Replace 'Tanziul' with the variable holding the customer's name.
               await BluetoothEscposPrinter.printColumn(
-                columnWidths,
+                [24, 24],
+                [
+                  BluetoothEscposPrinter.ALIGN.LEFT,
+                  BluetoothEscposPrinter.ALIGN.RIGHT,
+                ],
+                ['Customer', 'Tanziul'],
+                {},
+              );
+
+              // Print items.
+              await BluetoothEscposPrinter.printText('Products\r\n', {});
+              await BluetoothEscposPrinter.printText(
+                '----------------------------------------------\r\n',
+                {},
+              );
+
+              // Replace with actual items, quantities, and prices.
+              // Example of printing one item; repeat for each item.
+              await BluetoothEscposPrinter.printColumn(
+                [8, 20, 20],
                 [
                   BluetoothEscposPrinter.ALIGN.LEFT,
                   BluetoothEscposPrinter.ALIGN.LEFT,
                   BluetoothEscposPrinter.ALIGN.RIGHT,
                 ],
-                ['1x', 'Cumi-Cumi', 'Rp.200.000'],
+                ['1x', 'AMERICAN HARVEST', 'Tk.270.00'],
                 {},
               );
+
+              // Print dotted line.
+              await BluetoothEscposPrinter.printText(
+                '----------------------------------------------\r\n',
+                {},
+              );
+
+              // Print total.
+              // Replace '1445.00' with the variable holding the total amount.
               await BluetoothEscposPrinter.printColumn(
-                columnWidths,
+                [24, 24],
                 [
-                  BluetoothEscposPrinter.ALIGN.LEFT,
                   BluetoothEscposPrinter.ALIGN.LEFT,
                   BluetoothEscposPrinter.ALIGN.RIGHT,
                 ],
-                ['1x', 'Tongkol Kering', 'Rp.300.000'],
+                ['Total', 'Tk.1445.00'],
                 {},
               );
-              await BluetoothEscposPrinter.printColumn(
-                columnWidths,
-                [
-                  BluetoothEscposPrinter.ALIGN.LEFT,
-                  BluetoothEscposPrinter.ALIGN.LEFT,
-                  BluetoothEscposPrinter.ALIGN.RIGHT,
-                ],
-                ['1x', 'Ikan Tuna', 'Rp.400.000'],
-                {},
-              );
-              await BluetoothEscposPrinter.printText(
-                '================================================',
-                {},
-              );
-              await BluetoothEscposPrinter.printColumn(
-                [24, 24],
-                [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-                ['Subtotal', 'Rp.900.000'],
-                {},
-              );
-              await BluetoothEscposPrinter.printColumn(
-                [24, 24],
-                [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-                ['Packaging', 'Rp.6.000'],
-                {},
-              );
-              await BluetoothEscposPrinter.printColumn(
-                [24, 24],
-                [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-                ['Delivery', 'Rp.0'],
-                {},
-              );
-              await BluetoothEscposPrinter.printText(
-                '================================================',
-                {},
-              );
-              await BluetoothEscposPrinter.printColumn(
-                [24, 24],
-                [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-                ['Total', 'Rp.906.000'],
-                {},
-              );
-              await BluetoothEscposPrinter.printText('\r\n\r\n', {});
-              await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
-              await BluetoothEscposPrinter.printQRCode(
-                'DP0837849839',
-                280,
-                BluetoothEscposPrinter.ERROR_CORRECTION.L,
-              );
-              await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
-              await BluetoothEscposPrinter.printColumn(
-                [48],
-                [BluetoothEscposPrinter.ALIGN.CENTER],
-                ['DP0837849839'],
-                { widthtimes: 2 },
-              );
-              await BluetoothEscposPrinter.printText(
-                '================================================',
-                {},
-              );
-              await BluetoothEscposPrinter.printColumn(
-                [48],
-                [BluetoothEscposPrinter.ALIGN.CENTER],
-                ['Sabtu, 18 Juni 2022 - 06:00 WIB'],
-                {},
-              );
-              await BluetoothEscposPrinter.printText(
-                '================================================',
-                {},
-              );
-              await BluetoothEscposPrinter.printText('\r\n\r\n\r\n', {});
+
+              // Finish with spacing.
               await BluetoothEscposPrinter.printText('\r\n\r\n\r\n', {});
             } catch (e) {
               alert(e.message || 'ERROR');

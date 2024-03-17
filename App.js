@@ -1,23 +1,44 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
-  ActivityIndicator,
   DeviceEventEmitter,
   NativeEventEmitter,
   PermissionsAndroid,
   Platform,
-  ScrollView,
+  SafeAreaView,
+  StyleSheet,
   Text,
   ToastAndroid,
+  TouchableOpacity,
   View,
-  Button,
 } from 'react-native';
-import { BluetoothManager } from 'react-native-bluetooth-escpos-printer';
-import { PERMISSIONS, requestMultiple, RESULTS } from 'react-native-permissions';
-import ItemList from './ItemList';
-import SamplePrint from './SamplePrint';
-import { styles } from './styles';
+
+import {BluetoothManager} from 'react-native-bluetooth-escpos-printer';
+import {PERMISSIONS, RESULTS, requestMultiple} from 'react-native-permissions';
+import InvoiceScreen from './InvoiceScreen';
+import PrinterScreen from './PrinterScreen';
+import {getBluetoothData} from './services/BluetoothService';
 
 const App = () => {
+  const [showPrinterScreen, setShowPrinterScreen] = useState(false);
+  const [showInvoiceScreen, setShowInvoiceScreen] = useState(false);
+
+  const handleInvoiceButtonPress = () => {
+    setShowInvoiceScreen(true);
+    setShowPrinterScreen(false);
+  };
+
+  const handleBluetoothButtonPress = () => {
+    setShowPrinterScreen(true);
+    setShowInvoiceScreen(false);
+  };
+
+  const handleBack = () => {
+    setShowPrinterScreen(false);
+    setShowInvoiceScreen(false);
+  };
+
+  // ? bluetooth
+
   const [pairedDevices, setPairedDevices] = useState([]);
   const [foundDs, setFoundDs] = useState([]);
   const [bleOpend, setBleOpend] = useState(false);
@@ -38,30 +59,54 @@ const App = () => {
 
     if (Platform.OS === 'ios') {
       let bluetoothManagerEmitter = new NativeEventEmitter(BluetoothManager);
-      bluetoothManagerEmitter.addListener(BluetoothManager.EVENT_DEVICE_ALREADY_PAIRED, rsp => {
-        deviceAlreadPaired(rsp);
-      });
-      bluetoothManagerEmitter.addListener(BluetoothManager.EVENT_DEVICE_FOUND, rsp => {
-        deviceFoundEvent(rsp);
-      });
-      bluetoothManagerEmitter.addListener(BluetoothManager.EVENT_CONNECTION_LOST, () => {
-        setName('');
-        setBoundAddress('');
-      });
+      bluetoothManagerEmitter.addListener(
+        BluetoothManager.EVENT_DEVICE_ALREADY_PAIRED,
+        rsp => {
+          deviceAlreadPaired(rsp);
+        },
+      );
+      bluetoothManagerEmitter.addListener(
+        BluetoothManager.EVENT_DEVICE_FOUND,
+        rsp => {
+          deviceFoundEvent(rsp);
+        },
+      );
+      bluetoothManagerEmitter.addListener(
+        BluetoothManager.EVENT_CONNECTION_LOST,
+        () => {
+          setName('');
+          setBoundAddress('');
+        },
+      );
     } else if (Platform.OS === 'android') {
-      DeviceEventEmitter.addListener(BluetoothManager.EVENT_DEVICE_ALREADY_PAIRED, rsp => {
-        deviceAlreadPaired(rsp);
-      });
-      DeviceEventEmitter.addListener(BluetoothManager.EVENT_DEVICE_FOUND, rsp => {
-        deviceFoundEvent(rsp);
-      });
-      DeviceEventEmitter.addListener(BluetoothManager.EVENT_CONNECTION_LOST, () => {
-        setName('');
-        setBoundAddress('');
-      });
-      DeviceEventEmitter.addListener(BluetoothManager.EVENT_BLUETOOTH_NOT_SUPPORT, () => {
-        ToastAndroid.show('Device Not Support Bluetooth !', ToastAndroid.LONG);
-      });
+      DeviceEventEmitter.addListener(
+        BluetoothManager.EVENT_DEVICE_ALREADY_PAIRED,
+        rsp => {
+          deviceAlreadPaired(rsp);
+        },
+      );
+      DeviceEventEmitter.addListener(
+        BluetoothManager.EVENT_DEVICE_FOUND,
+        rsp => {
+          deviceFoundEvent(rsp);
+        },
+      );
+      DeviceEventEmitter.addListener(
+        BluetoothManager.EVENT_CONNECTION_LOST,
+        () => {
+          setName('');
+          setBoundAddress('');
+        },
+      );
+      DeviceEventEmitter.addListener(
+        BluetoothManager.EVENT_BLUETOOTH_NOT_SUPPORT,
+        () => {
+          ToastAndroid.show(
+            'Device Not Support Bluetooth !',
+            ToastAndroid.LONG,
+          );
+        },
+      );
     }
     if (pairedDevices.length < 1) {
       scan();
@@ -178,7 +223,8 @@ const App = () => {
       async function blueTooth() {
         const permissions = {
           title: 'HSD bluetooth meminta izin untuk mengakses bluetooth',
-          message: 'HSD bluetooth memerlukan akses ke bluetooth untuk proses koneksi ke bluetooth printer',
+          message:
+            'HSD bluetooth memerlukan akses ke bluetooth untuk proses koneksi ke bluetooth printer',
           buttonNeutral: 'Lain Waktu',
           buttonNegative: 'Tidak',
           buttonPositive: 'Boleh',
@@ -205,7 +251,7 @@ const App = () => {
       console.warn(err);
     }
   }, [scanDevices]);
-  
+
   const scanBluetoothDevice = async () => {
     setLoading(true);
     try {
@@ -215,7 +261,9 @@ const App = () => {
         PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
       ]);
 
-      if (request['android.permission.ACCESS_FINE_LOCATION'] === RESULTS.GRANTED) {
+      if (
+        request['android.permission.ACCESS_FINE_LOCATION'] === RESULTS.GRANTED
+      ) {
         scanDevices();
         setLoading(false);
       } else {
@@ -226,52 +274,280 @@ const App = () => {
     }
   };
 
+  const currentDate = new Date();
+
+  // Format the date
+  const formattedDate = `${currentDate.getDate()}/${
+    currentDate.getMonth() + 1
+  }/${currentDate.getFullYear()}`;
+
+  // Format the time
+  const formattedTime = `${currentDate.getHours()}:${currentDate.getMinutes()}`;
+
+  // Combine date and time
+  const dateTime = `${formattedDate} ${formattedTime}`;
+
+  // ? call bluetooth
+  useEffect(() => {
+    callBluetooth();
+  }, []);
+
+  const callBluetooth = async () => {
+    // Get Bluetooth data
+    const retrievedData = await getBluetoothData();
+
+    //  console.log(retrievedData);
+
+    console.log('555 _> ', retrievedData);
+
+    if (retrievedData !== null) {
+      connect(retrievedData);
+    }
+  };
+
   return (
-      <ScrollView style={styles.container}>
-        <View style={styles.bluetoothStatusContainer}>
-          <Text style={styles.bluetoothStatus(bleOpend ? '#47BF34' : '#A8A9AA')}>
-            Bluetooth {bleOpend ? 'Aktif' : 'Non Aktif'}
-          </Text>
+    <SafeAreaView style={[styles.container]}>
+      {!showPrinterScreen && !showInvoiceScreen && (
+        <View>
+          <View style={styles.header}>
+            <Text style={styles.textLabel}>Bell</Text>
+            <Text style={styles.balanceTitle}>Hasan's Store</Text>
+            <Text style={styles.textLabel}>User</Text>
+          </View>
+
+          <View style={styles.balanceContainer}>
+            <Text style={styles.balanceAmount}>{dateTime}</Text>
+            <Text style={styles.availableBalance}>
+              New Sonakanda, Bus Stand, Ruhitpur,
+            </Text>
+            <Text style={styles.availableBalance}>Keraniganj, Dhaka</Text>
+          </View>
+
+          <View style={styles.menu}>
+            <TouchableOpacity
+              style={
+                boundAddress.length < 1
+                  ? styles.menuItemInvoiceDisActive
+                  : styles.menuItemInvoiceActive
+              }
+              disabled={boundAddress.length < 1 ? true : false}
+              onPress={handleInvoiceButtonPress}>
+              <Text style={styles.menuItemInvoiceActiveTextLabel}>
+                InVoice 🖨️
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleBluetoothButtonPress}
+              style={
+                boundAddress.length < 1
+                  ? styles.menuItemBluetoothDisActive
+                  : styles.menuItemBluetoothActive
+              }>
+              <Text style={styles.menuItemInBluetoothActiveTextLabel}>
+                Bluetooth ➕
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {boundAddress.length > 0 && (
+            <TouchableOpacity style={styles.upgrade}>
+              <Text style={styles.upgradeText}>Bluetooth : {name}</Text>
+              <Text style={styles.upgradeSubtext}>{boundAddress}</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        {!bleOpend && <Text style={styles.bluetoothInfo}>Mohon aktifkan bluetooth anda</Text>}
-        <Text style={styles.sectionTitle}>Printer yang terhubung ke aplikasi:</Text>
-        {boundAddress.length > 0 && (
-          <ItemList
-            label={name}
-            value={boundAddress}
-            onPress={() => unPair(boundAddress)}
-            actionText="Putus"
-            color="#E9493F"
-          />
-        )}
-        {boundAddress.length < 1 && (
-          <Text style={styles.printerInfo}>Belum ada printer yang terhubung</Text>
-        )}
-        <Text style={styles.sectionTitle}>Bluetooth yang terhubung ke HP ini:</Text>
-        {loading ? <ActivityIndicator animating={true} /> : null}
-        <View style={styles.containerList}>
-          {pairedDevices.map((item, index) => {
-            return (
-              <ItemList
-                key={index}
-                onPress={() => connect(item)}
-                label={item.name}
-                value={item.address}
-                connected={item.address === boundAddress}
-                actionText="Hubungkan"
-                color="#00BCD4"
-              />
-            );
-          })}
-        </View>
-        <SamplePrint />
-        <Button
-          onPress={() => scanBluetoothDevice()}
-          title="Scan Bluetooth"
+      )}
+      {/* Conditionally render the screens */}
+      {showPrinterScreen && (
+        <PrinterScreen
+          onBack={handleBack}
+          bleOpend={bleOpend}
+          boundAddress={boundAddress}
+          scanBluetoothDevice={scanBluetoothDevice}
+          unPair={unPair}
+          connect={connect}
+          pairedDevices={pairedDevices}
+          loading={loading}
+          name={name}
         />
-        <View style={{height: 100}} />
-      </ScrollView>
+      )}
+      {showInvoiceScreen && <InvoiceScreen onBack={handleBack} />}
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  horizontalButton: {
+    flexDirection: 'row',
+    // backgroundColor: "#f0f4f7",
+    // backgroundColor: "#f0f4f7",
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+  },
+  buttonText: {
+    //color: "#007AFF",
+    color: '#2c3e50',
+    fontSize: 16,
+
+    marginLeft: 10,
+  },
+
+  additionalText: {
+    color: 'gray', // Adjust the color as needed
+    fontSize: 16, // Adjust the font size as needed
+    // marginRight: 10, // Add margin to separate it from the button
+    textAlign: 'right',
+    marginHorizontal: 20,
+    marginBottom: 10,
+  },
+  textLabel: {
+    color: 'white',
+  },
+
+  container: {
+    flex: 1,
+    backgroundColor: '#f0f4f7',
+    // marginTop: StatusBar.currentHeight,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 10,
+  },
+  balanceTitle: {
+    fontSize: 24,
+    color: '#4F8EF7',
+    fontWeight: 'bold',
+  },
+  balanceContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  availableBalance: {
+    fontSize: 16,
+    color: '#2c3e50',
+    marginBottom: 5,
+  },
+  balanceAmount: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+  },
+  menu: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    paddingVertical: 10,
+  },
+  menuItemBluetoothDisActive: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#e74c3c',
+    padding: 10,
+    borderRadius: 10,
+    paddingVertical: 20,
+  },
+  menuItemBluetoothActive: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2ECC71',
+    padding: 10,
+    borderRadius: 10,
+    paddingVertical: 20,
+  },
+  menuItemInvoiceDisActive: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2c3e50',
+    padding: 10,
+    borderRadius: 10,
+    paddingVertical: 20,
+  },
+  menuItemInvoiceActive: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4F8EF7',
+    padding: 10,
+    borderRadius: 10,
+    paddingVertical: 20,
+  },
+  menuItemInvoiceActiveTextLabel: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  menuItemInBluetoothActiveTextLabel: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+
+  upgrade: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  upgradeText: {
+    color: '#2ECC71',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  upgradeSubtext: {
+    color: '#7f8c8d',
+  },
+  transactionHistory: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  transactionTitle: {
+    fontSize: 18,
+    color: '#2c3e50',
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  transactionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  transactionText: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  transactionItemTitleActive: {
+    color: '#2ECC71',
+    fontWeight: 'bold',
+  },
+  transactionItemTitle: {
+    color: '#2c3e50',
+    fontWeight: 'bold',
+  },
+  transactionItemDate: {
+    color: '#7f8c8d',
+    fontSize: 12,
+  },
+  transactionItemAmount: {
+    color: '#e74c3c',
+    fontWeight: 'bold',
+  },
+  transactionItemAmountActive: {
+    color: '#2ECC71',
+    fontWeight: 'bold',
+  },
+});
 
 export default App;
