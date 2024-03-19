@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
 import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
+
 // import BluetoothEscposPrinter from 'react-native-bluetooth-escpos-printer';
 
 import {useState} from 'react';
@@ -218,266 +218,476 @@ const InvoiceScreen = ({onBack}) => {
       return;
     }
 
+    const printItemDetails = async () => {
+      for (const dt of invoiceDetails.products) {
+        // await BluetoothEscposPrinter.printText(`${dt.qty}     `, {
+        //   align: 'left',
+        // });
+        // await BluetoothEscposPrinter.printText(`${dt.name}     `, {});
+        // await BluetoothEscposPrinter.printText(`${dt.price}    `, {
+        //   align: 'right',
+        // });
+        // await BluetoothEscposPrinter.printText(`${dt.total}\r\n`, {
+        //   align: 'right',
+        // });
+
+        await BluetoothEscposPrinter.printColumn(
+          columnWidths,
+          [
+            BluetoothEscposPrinter.ALIGN.LEFT,
+            BluetoothEscposPrinter.ALIGN.CENTER,
+            BluetoothEscposPrinter.ALIGN.CENTER,
+            BluetoothEscposPrinter.ALIGN.RIGHT,
+          ],
+          [
+            `${dt.name}`,
+            `${dt.qty}`,
+            `${parseInt(dt.price).toFixed(2)}`,
+            `${parseInt(dt.total).toFixed(2)}`,
+          ],
+          {},
+        );
+        // await BluetoothEscposPrinter.printText('\n\r', {});
+      }
+    };
+
     const date = new Date('2024-02-05T19:31:00');
     const formattedDate = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 
-    const printItemDetails = async () => {
-      for (const dt of invoiceDetails.products) {
-        await BluetoothEscposPrinter.printText(`${dt.qty}     `, {
-          align: 'left',
-        });
-        await BluetoothEscposPrinter.printText(`${dt.name}     `, {});
-        await BluetoothEscposPrinter.printText(`${dt.price}    `, {
-          align: 'right',
-        });
-        await BluetoothEscposPrinter.printText(`${dt.total}\r\n`, {
-          align: 'right',
-        });
-      }
-    };
-    // await BluetoothEscposPrinter.setBlob(1);
-    await BluetoothEscposPrinter.printText('LogicLark\r\n', {});
-
-    await BluetoothEscposPrinter.printText('New Sonakanda Bus Stand\r\n', {});
-
-    await BluetoothEscposPrinter.printColumn(
-      [BluetoothEscposPrinter.ALIGN.RIGHT],
-      ['MMMMM'],
-      {},
-    );
-
-    await BluetoothEscposPrinter.printText(
-      'Rohitpur, Keranigonj, Dhaka\r\n',
-      {},
-    );
-
-    // await BluetoothEscposPrinter.setBlob(1);
-    await BluetoothEscposPrinter.printText("Hasan's Store\r\n", {});
-
-    await BluetoothEscposPrinter.printText('New Sonakanda Bus Stand\r\n', {});
-    await BluetoothEscposPrinter.printText(
-      'Rohitpur, Keranigonj, Dhaka\r\n',
-      {},
-    );
-    await BluetoothEscposPrinter.printText('Mobile: 01813048283\r\n', {});
-
-    await BluetoothEscposPrinter.printText(
-      '------------------------------\n',
-      {},
-    );
-
-    // Print the transaction information
-    // await BluetoothEscposPrinter.setBlob(0);
-    // await BluetoothEscposPrinter.printText(`Date:${formattedDate}\r\n`, {});
-
-    // await BluetoothEscposPrinter.setAbsolutePrintPosition({x: 100, y: 0}); // Set starting position (X-coordinate)
-    // await BluetoothEscposPrinter.setBlob(1);
-    await BluetoothEscposPrinter.printText(`Date:${formattedDate}\r\n`, {});
-
-    // await BluetoothEscposPrinter.printText(
-    //   `${formattedDate}          \r\n`,
-    //   {},
-    // );
-    // await BluetoothEscposPrinter.printText(
-    //   'Customer:                     \r\n',
-    //   {},
-    // );
-    await BluetoothEscposPrinter.printText(
-      `Customer: ${invoiceDetails.customerName}\r\n`,
-      {},
-    );
-    // await BluetoothEscposPrinter.printText(
-    //   'Customer phone:               \r\n',
-    //   {},
-    // );
-    await BluetoothEscposPrinter.printText(
-      `Customer phone: ${invoiceDetails.customerPhone}\r\n`,
-      {},
-    );
-    // await BluetoothEscposPrinter.printText(
-    //   'Customer Address:             \r\n',
-    //   {},
-    // );
-    // await BluetoothEscposPrinter.printText(
-    //   `${invoiceDetails.customerDetails}\r\n`,
-    //   {},
-    // );
-
-    await BluetoothEscposPrinter.printText(
-      '------------------------------\r\n',
-      {},
-    );
-
-    // Print the items purchased
-    await BluetoothEscposPrinter.printText(
-      'QTY  ITEM    PRICE   total\r\n',
-      {},
-    );
-    await BluetoothEscposPrinter.printText(
-      '------------------------------\r\n',
-      {},
-    );
-    // // Example for one item, repeat for each item
-    // await BluetoothEscposPrinter.printText(
-    //   '1    AMERICAN HARVEST    270.00\r\n', // for qty align left , product name center and product price right..now how to
-    //   {},
-    // );
-
-    await printItemDetails();
-
-    // ... print other items
-
-    // Print the summary of the transaction
-    await BluetoothEscposPrinter.printText(
-      '------------------------------\r\n',
-      {},
-    );
-    await BluetoothEscposPrinter.printText(
-      `Subtotal:              ${calculateSubtotal().toFixed(2)}\r\n`,
-      {},
-    );
-    await BluetoothEscposPrinter.printText(
-      `Discount:                ${
-        invoiceDetails.discount === '%'
-          ? 0
-          : (calculateSubtotal().toFixed(2) - finalTotal.toFixed(2)).toFixed(2)
-      }\r\n`,
-      {},
-    );
-
-    await BluetoothEscposPrinter.printText(
-      '-------------------------------\r\n',
-      {},
-    );
-    await BluetoothEscposPrinter.printText(
-      `Grand Total:           ${finalTotal.toFixed(2)}\r\n`,
-      {},
-    );
-    await BluetoothEscposPrinter.printText(
-      '------------------------------\r\n',
-      {},
-    );
-
-    // Print the footer of the receipt
-    await BluetoothEscposPrinter.printText(
-      'Thank you for shopping with us!\r\n',
-      {},
-    );
-    //  await BluetoothEscposPrinter.printText('Please visit again.\r\n', {});
-    await BluetoothEscposPrinter.printText('Powered By: LogicLark.', {});
-    // await BluetoothEscposPrinter.printText(
-    //   '--------------------------------\r\n',
-    //   {},
-    // );
-
-    // End the transaction with some space
-    // await BluetoothEscposPrinter.printText('\r\n\r\n\r\n', {});
-  };
-
-  const printItemDetails = async () => {
-    for (const dt of nameDD) {
-      await BluetoothEscposPrinter.printText(`1    ${dt}    270.00\r\n`, {});
-    }
-  };
-
-  const printFunction = async () => {
-    // Begin the transaction with some space
-    await BluetoothEscposPrinter.printText('\r\n\r\n', {});
-
-    // Print the header of the receipt
+    // ? ===== start ============
     await BluetoothEscposPrinter.printerAlign(
       BluetoothEscposPrinter.ALIGN.CENTER,
     );
-    await BluetoothEscposPrinter.printText('LAZZ PHARMA LIMITED\r\n', {});
-    await BluetoothEscposPrinter.printText('Rajshahi Branch\r\n', {});
+    await BluetoothEscposPrinter.setBlob(1);
+    await BluetoothEscposPrinter.printText("Hasan's Store\n\r", {
+      encoding: 'GBK',
+      codepage: 0,
+      widthtimes: 0,
+      heigthtimes: 0,
+      fonttype: 0,
+    });
+    await BluetoothEscposPrinter.setBlob(0);
+    await BluetoothEscposPrinter.printText('New Sonakanda, BussStand\n\r', {});
+    await BluetoothEscposPrinter.printText('Ruhitpur, Keranigonj, Dhaka\n\r', {
+      encoding: 'GBK',
+      codepage: 0,
+      widthtimes: 0,
+      heigthtimes: 0,
+      fonttype: 0,
+    });
+    await BluetoothEscposPrinter.printText('01813048283\n\r', {
+      encoding: 'GBK',
+      codepage: 0,
+      widthtimes: 0,
+      heigthtimes: 0,
+      fonttype: 0,
+    });
+    await BluetoothEscposPrinter.printText('\n\r', {});
+    await BluetoothEscposPrinter.printerAlign(
+      BluetoothEscposPrinter.ALIGN.LEFT,
+    );
+    await BluetoothEscposPrinter.printText(`Date: ${formattedDate}\n\r`, {});
     await BluetoothEscposPrinter.printText(
-      '159/A, Keranigonj, Rajshahi-6100\r\n',
+      `Customer: ${invoiceDetails.customerName}\n\r`,
       {},
     );
-    await BluetoothEscposPrinter.printText('Mobile: 01766765252\r\n', {});
     await BluetoothEscposPrinter.printText(
-      '---------------------------------\r\n',
+      `Mobile: ${invoiceDetails.customerPhone}\n\r`,
       {},
     );
 
-    // Print the transaction information
-    //  await BluetoothEscposPrinter.setBlob(0);
+    // await BluetoothEscposPrinter.printText('Salesperson: 18664896621\n\r', {});
     await BluetoothEscposPrinter.printText(
-      'Date:                   Bill No:\r\n',
+      '--------------------------------\n\r',
+      {},
+    );
+    let columnWidths = [12, 6, 6, 8];
+    await BluetoothEscposPrinter.printColumn(
+      columnWidths,
+      [
+        BluetoothEscposPrinter.ALIGN.LEFT,
+        BluetoothEscposPrinter.ALIGN.CENTER,
+        BluetoothEscposPrinter.ALIGN.CENTER,
+        BluetoothEscposPrinter.ALIGN.RIGHT,
+      ],
+      ['Product', 'Qty', 'U P', 'Amount'],
       {},
     );
     await BluetoothEscposPrinter.printText(
-      '2024/02/05 19:31          240205\r\n',
+      '--------------------------------\n\r',
       {},
     );
-    await BluetoothEscposPrinter.printText(
-      'Customer name:                  \r\n',
-      {},
-    );
-    await BluetoothEscposPrinter.printText(
-      '2024/02/05 19:31          240205\r\n',
-      {},
-    );
-    await BluetoothEscposPrinter.printText(
-      'Customer Address:              \r\n',
-      {},
-    );
-    await BluetoothEscposPrinter.printText(
-      '2024/02/05 19:31          240205\r\n',
-      {},
-    );
-
-    await BluetoothEscposPrinter.printText('----------------\r\n', {});
-
-    // Print the items purchased
-    await BluetoothEscposPrinter.printText(
-      'QTY  ITEM DESCRIPTION      PRICE\r\n',
-      {},
-    );
-    await BluetoothEscposPrinter.printText('--------------------\r\n', {});
-    // Example for one item, repeat for each item
-    await BluetoothEscposPrinter.printText(
-      '1    AMERICAN HARVEST    270.00\r\n', // for qty align left , product name center and product price right..now how to
-      {},
-    );
+    // await BluetoothEscposPrinter.printColumn(
+    //   columnWidths,
+    //   [
+    //     BluetoothEscposPrinter.ALIGN.LEFT,
+    //     BluetoothEscposPrinter.ALIGN.LEFT,
+    //     BluetoothEscposPrinter.ALIGN.CENTER,
+    //     BluetoothEscposPrinter.ALIGN.RIGHT,
+    //   ],
+    //   [
+    //     'React-Native Custom Development I am a longer position do you see if this is the case?',
+    //     '1',
+    //     '32000',
+    //     '32000',
+    //   ],
+    //   {},
+    // );
+    // await BluetoothEscposPrinter.printText('\n\r', {});
+    // await BluetoothEscposPrinter.printColumn(
+    //   columnWidths,
+    //   [
+    //     BluetoothEscposPrinter.ALIGN.LEFT,
+    //     BluetoothEscposPrinter.ALIGN.LEFT,
+    //     BluetoothEscposPrinter.ALIGN.CENTER,
+    //     BluetoothEscposPrinter.ALIGN.RIGHT,
+    //   ],
+    //   [
+    //     'React-Native Custom Development I am a longer position do you see if this is the case?',
+    //     '1',
+    //     '32000',
+    //     '32000',
+    //   ],
+    //   {},
+    // );
+    // await BluetoothEscposPrinter.printText('\n\r', {});
 
     await printItemDetails();
 
-    // ... print other items
-
-    // Print the summary of the transaction
-    await BluetoothEscposPrinter.printText('-------------\r\n', {});
     await BluetoothEscposPrinter.printText(
-      'Subtotal:              1445.00\r\n',
+      '--------------------------------\n\r',
       {},
     );
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Subtotal', `${calculateSubtotal().toFixed(2)}`],
+      {},
+    );
+    //   await BluetoothEscposPrinter.printText('\n\r', {});
+    await BluetoothEscposPrinter.printColumn(
+      [14, 8, 10],
+      [
+        BluetoothEscposPrinter.ALIGN.LEFT,
+        BluetoothEscposPrinter.ALIGN.LEFT,
+        BluetoothEscposPrinter.ALIGN.RIGHT,
+      ],
+      [
+        'Discount',
+        `${invoiceDetails.discount === '%' ? '0%' : invoiceDetails.discount}`,
+        `- ${
+          invoiceDetails.discount === '%'
+            ? 0
+            : (calculateSubtotal().toFixed(2) - finalTotal.toFixed(2)).toFixed(
+                2,
+              )
+        }`,
+      ],
+      {},
+    );
+    //  await BluetoothEscposPrinter.printText('\n\r', {});
+
     await BluetoothEscposPrinter.printText(
-      'Discount:                72.25\r\n',
+      '--------------------------------\n\r',
       {},
     );
 
-    await BluetoothEscposPrinter.printText('-----------\r\n', {});
-    await BluetoothEscposPrinter.printText(
-      'Grand Total:           1445.00\r\n',
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Grand Total', `${finalTotal.toFixed(2)}`],
       {},
     );
-    await BluetoothEscposPrinter.printText('---------------------\r\n', {});
+    await BluetoothEscposPrinter.printText('\n\r', {});
 
-    // Print the footer of the receipt
+    // await BluetoothEscposPrinter.printText('Discount Rate: 100%\n\r', {});
+    // await BluetoothEscposPrinter.printText(
+    //   'After Discount Receivable: 64000.00\n\r',
+    //   {},
+    // );
+    // await BluetoothEscposPrinter.printText(
+    //   'Membership Card Payment: 0.00\n\r',
+    //   {},
+    // );
+    // await BluetoothEscposPrinter.printText('Points Deduction: 0.00\n\r', {});
+    // await BluetoothEscposPrinter.printText('Payment Amount: 64000.00\n\r', {});
+    // await BluetoothEscposPrinter.printText(
+    //   'Settlement Account: Cash Account\n\r',
+    //   {},
+    // );
+    // await BluetoothEscposPrinter.printText('Remarks: None\n\r', {});
+    // await BluetoothEscposPrinter.printText('Courier Number: None\n\r', {});
+
+    // await BluetoothEscposPrinter.printText(
+    //   '--------------------------------\n\r',
+    //   {},
+    // );
+    // await BluetoothEscposPrinter.printText('Phone:\n\r', {});
+    // await BluetoothEscposPrinter.printText('Address:\n\r\n\r', {});
+    // await BluetoothEscposPrinter.printerAlign(
+    //   BluetoothEscposPrinter.ALIGN.CENTER,
+    // );
+    // await BluetoothEscposPrinter.printText(
+    //   'Welcome to visit next time\n\r\n\r\n\r',
+    //   {},
+    // );
+    // await BluetoothEscposPrinter.printerAlign(
+    //   BluetoothEscposPrinter.ALIGN.LEFT,
+    // );
+
+    await BluetoothEscposPrinter.printerAlign(
+      BluetoothEscposPrinter.ALIGN.CENTER,
+    );
     await BluetoothEscposPrinter.printText(
       'Thank you for shopping with us!\r\n',
       {},
     );
-    await BluetoothEscposPrinter.printText('Please visit again.\r\n', {});
-    await BluetoothEscposPrinter.printText(
-      'Powered By: Taj Tech Ltd. (01774020251)\r\n',
-      {},
-    );
-    await BluetoothEscposPrinter.printText(
-      '------------------------------------------\r\n',
-      {},
-    );
+    await BluetoothEscposPrinter.printText('Powered By:\r\n', {});
+    await BluetoothEscposPrinter.printText('LogicLark. 01927574610\r\n', {});
+    await BluetoothEscposPrinter.printText('\n\r', {});
+    await BluetoothEscposPrinter.printText('\n\r', {});
 
+    // ? ----- end
+
+    // ! ---------- start
+    //   await BluetoothEscposPrinter.printText('LogicLark', {});
+    //   await BluetoothEscposPrinter.printText('LogicLark', {});
+
+    //   await BluetoothEscposPrinter.printText('New Sonakanda Bus Stand\r\n', {});
+
+    //   await BluetoothEscposPrinter.printText(
+    //     'Rohitpur, Keranigonj, Dhaka\r\n',
+    //     {},
+    //   );
+
+    //   // await BluetoothEscposPrinter.setBlob(1);
+    //   await BluetoothEscposPrinter.printText("Hasan's Store\r\n", {});
+
+    //   await BluetoothEscposPrinter.printText('New Sonakanda Bus Stand\r\n', {});
+    //   await BluetoothEscposPrinter.printText(
+    //     'Rohitpur, Keranigonj, Dhaka\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText('Mobile: 01813048283\r\n', {});
+
+    //   await BluetoothEscposPrinter.printText(
+    //     '------------------------------\n',
+    //     {},
+    //   );
+
+    //   // Print the transaction information
+    //   // await BluetoothEscposPrinter.setBlob(0);
+    //   // await BluetoothEscposPrinter.printText(`Date:${formattedDate}\r\n`, {});
+
+    //   // await BluetoothEscposPrinter.setAbsolutePrintPosition({x: 100, y: 0}); // Set starting position (X-coordinate)
+    //   // await BluetoothEscposPrinter.setBlob(1);
+    //   await BluetoothEscposPrinter.printText(`Date:${formattedDate}\r\n`, {});
+
+    //   // await BluetoothEscposPrinter.printText(
+    //   //   `${formattedDate}          \r\n`,
+    //   //   {},
+    //   // );
+    //   // await BluetoothEscposPrinter.printText(
+    //   //   'Customer:                     \r\n',
+    //   //   {},
+    //   // );
+    //   await BluetoothEscposPrinter.printText(
+    //     `Customer: ${invoiceDetails.customerName}\r\n`,
+    //     {},
+    //   );
+    //   // await BluetoothEscposPrinter.printText(
+    //   //   'Customer phone:               \r\n',
+    //   //   {},
+    //   // );
+    //   await BluetoothEscposPrinter.printText(
+    //     `Customer phone: ${invoiceDetails.customerPhone}\r\n`,
+    //     {},
+    //   );
+    //   // await BluetoothEscposPrinter.printText(
+    //   //   'Customer Address:             \r\n',
+    //   //   {},
+    //   // );
+    //   // await BluetoothEscposPrinter.printText(
+    //   //   `${invoiceDetails.customerDetails}\r\n`,
+    //   //   {},
+    //   // );
+
+    //   await BluetoothEscposPrinter.printText(
+    //     '------------------------------\r\n',
+    //     {},
+    //   );
+
+    //   // Print the items purchased
+    //   await BluetoothEscposPrinter.printText(
+    //     'QTY  ITEM    PRICE   total\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     '------------------------------\r\n',
+    //     {},
+    //   );
+    //   // // Example for one item, repeat for each item
+    //   // await BluetoothEscposPrinter.printText(
+    //   //   '1    AMERICAN HARVEST    270.00\r\n', // for qty align left , product name center and product price right..now how to
+    //   //   {},
+    //   // );
+
+    //   await printItemDetails();
+
+    //   // ... print other items
+
+    //   // Print the summary of the transaction
+    //   await BluetoothEscposPrinter.printText(
+    //     '------------------------------\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     `Subtotal:              ${calculateSubtotal().toFixed(2)}\r\n`,
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     `Discount:                ${
+    //       invoiceDetails.discount === '%'
+    //         ? 0
+    //         : (calculateSubtotal().toFixed(2) - finalTotal.toFixed(2)).toFixed(2)
+    //     }\r\n`,
+    //     {},
+    //   );
+
+    //   await BluetoothEscposPrinter.printText(
+    //     '-------------------------------\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     `Grand Total:           ${finalTotal.toFixed(2)}\r\n`,
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     '------------------------------\r\n',
+    //     {},
+    //   );
+
+    //   // Print the footer of the receipt
+    //   await BluetoothEscposPrinter.printText(
+    //     'Thank you for shopping with us!\r\n',
+    //     {},
+    //   );
+    //   //  await BluetoothEscposPrinter.printText('Please visit again.\r\n', {});
+    //   await BluetoothEscposPrinter.printText('Powered By: LogicLark.', {});
+    //   // await BluetoothEscposPrinter.printText(
+    //   //   '--------------------------------\r\n',
+    //   //   {},
+    //   // );
+
+    //   // End the transaction with some space
+    //   // await BluetoothEscposPrinter.printText('\r\n\r\n\r\n', {});
+    // };
+
+    // const printItemDetails = async () => {
+    //   for (const dt of nameDD) {
+    //     await BluetoothEscposPrinter.printText(`1    ${dt}    270.00\r\n`, {});
+    //   }
+    // };
+
+    // const printFunction = async () => {
+    //   // Begin the transaction with some space
+    //   await BluetoothEscposPrinter.printText('\r\n\r\n', {});
+
+    //   // Print the header of the receipt
+    //   await BluetoothEscposPrinter.printerAlign(
+    //     BluetoothEscposPrinter.ALIGN.CENTER,
+    //   );
+    //   await BluetoothEscposPrinter.printText('LAZZ PHARMA LIMITED\r\n', {});
+    //   await BluetoothEscposPrinter.printText('Rajshahi Branch\r\n', {});
+    //   await BluetoothEscposPrinter.printText(
+    //     '159/A, Keranigonj, Rajshahi-6100\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText('Mobile: 01766765252\r\n', {});
+    //   await BluetoothEscposPrinter.printText(
+    //     '---------------------------------\r\n',
+    //     {},
+    //   );
+
+    //   // Print the transaction information
+    //   //  await BluetoothEscposPrinter.setBlob(0);
+    //   await BluetoothEscposPrinter.printText(
+    //     'Date:                   Bill No:\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     '2024/02/05 19:31          240205\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     'Customer name:                  \r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     '2024/02/05 19:31          240205\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     'Customer Address:              \r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     '2024/02/05 19:31          240205\r\n',
+    //     {},
+    //   );
+
+    //   await BluetoothEscposPrinter.printText('----------------\r\n', {});
+
+    //   // Print the items purchased
+    //   await BluetoothEscposPrinter.printText(
+    //     'QTY  ITEM DESCRIPTION      PRICE\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText('--------------------\r\n', {});
+    //   // Example for one item, repeat for each item
+    //   await BluetoothEscposPrinter.printText(
+    //     '1    AMERICAN HARVEST    270.00\r\n', // for qty align left , product name center and product price right..now how to
+    //     {},
+    //   );
+
+    //   await printItemDetails();
+
+    //   // ... print other items
+
+    //   // Print the summary of the transaction
+    //   await BluetoothEscposPrinter.printText('-------------\r\n', {});
+    //   await BluetoothEscposPrinter.printText(
+    //     'Subtotal:              1445.00\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     'Discount:                72.25\r\n',
+    //     {},
+    //   );
+
+    //   await BluetoothEscposPrinter.printText('-----------\r\n', {});
+    //   await BluetoothEscposPrinter.printText(
+    //     'Grand Total:           1445.00\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText('---------------------\r\n', {});
+
+    //   // Print the footer of the receipt
+    //   await BluetoothEscposPrinter.printText(
+    //     'Thank you for shopping with us!\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText('Please visit again.\r\n', {});
+    //   await BluetoothEscposPrinter.printText(
+    //     'Powered By: Taj Tech Ltd. (01774020251)\r\n',
+    //     {},
+    //   );
+    //   await BluetoothEscposPrinter.printText(
+    //     '------------------------------------------\r\n',
+    //     {},
+    //   );
+
+    // ! ---------- end
     // // End the transaction with some space
     // await BluetoothEscposPrinter.printText('\r\n\r\n\r\n', {});
   };
@@ -703,7 +913,7 @@ const InvoiceScreen = ({onBack}) => {
             </Text>
           </View>
           <View style={styles.finalTotalRow}>
-            <Text style={styles.finalTotalLabel}>Final Total: 333</Text>
+            <Text style={styles.finalTotalLabel}>Final Total: </Text>
             <Text style={styles.finalTotal}>{finalTotal.toFixed(2)}</Text>
           </View>
 
