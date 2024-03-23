@@ -67,6 +67,7 @@ const InvoiceScreen = ({onBack}) => {
   ]);
   const [finalTotal, setFinalTotal] = useState(0);
   const [discount, setDiscount] = useState(''); // Use a string to handle empty input
+  const [receivedAmount, setReceivedAmount] = useState(0); // Use a string to handle empty input
   const [suggestions, setSuggestions] = useState([]);
   const [customerName, setCustomerName] = useState('');
   // const [customerDetails, setCustomerDetails] = useState('');
@@ -81,10 +82,8 @@ const InvoiceScreen = ({onBack}) => {
 
   const updateFinalTotal = () => {
     const subtotal = calculateSubtotal();
-    const discountValue = parseFloat(discount);
-    const totalAfterDiscount = isNaN(discountValue)
-      ? subtotal
-      : subtotal - (subtotal * discountValue) / 100;
+    const discountValue = parseFloat(discount === '' ? 0 : discount);
+    const totalAfterDiscount = subtotal - discountValue;
     setFinalTotal(totalAfterDiscount);
   };
 
@@ -141,7 +140,7 @@ const InvoiceScreen = ({onBack}) => {
     const detailsConsole = {
       products: constFilterProduct,
       subtotal: calculateSubtotal().toFixed(2),
-      discount: `${discount}%`,
+      discount: discount,
       finalTotal: finalTotal.toFixed(2),
       customerName: customerName,
       // customerDetails: customerDetails,
@@ -364,27 +363,26 @@ const InvoiceScreen = ({onBack}) => {
       ['Subtotal', `${calculateSubtotal().toFixed(2)}`],
       {},
     );
-    //   await BluetoothEscposPrinter.printText('\n\r', {});
     await BluetoothEscposPrinter.printColumn(
-      [14, 8, 10],
-      [
-        BluetoothEscposPrinter.ALIGN.LEFT,
-        BluetoothEscposPrinter.ALIGN.LEFT,
-        BluetoothEscposPrinter.ALIGN.RIGHT,
-      ],
-      [
-        'Discount',
-        `${invoiceDetails.discount === '%' ? '0%' : invoiceDetails.discount}`,
-        `- ${
-          invoiceDetails.discount === '%'
-            ? 0
-            : (calculateSubtotal().toFixed(2) - finalTotal.toFixed(2)).toFixed(
-                2,
-              )
-        }`,
-      ],
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Discount', `-${invoiceDetails.discount}`],
       {},
     );
+
+    console.log('this is roniiiiiiiiiii ', invoiceDetails.discount);
+
+    //   await BluetoothEscposPrinter.printText('\n\r', {});
+    // await BluetoothEscposPrinter.printColumn(
+    //   [16, 16],
+    //   [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+    //   [
+    //     'Discount',
+    //     `${invoiceDetails.discount}`,
+    //     `- ${invoiceDetails.discount}`,
+    //   ],
+    //   {},
+    // );
     //  await BluetoothEscposPrinter.printText('\n\r', {});
 
     await BluetoothEscposPrinter.printText(
@@ -396,6 +394,20 @@ const InvoiceScreen = ({onBack}) => {
       [16, 16],
       [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
       ['Grand Total', `${finalTotal.toFixed(2)}`],
+      {},
+    );
+    await BluetoothEscposPrinter.printText('\n\r', {});
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Paid Amount', `${receivedAmount.toFixed(2)}`],
+      {},
+    );
+    await BluetoothEscposPrinter.printText('\n\r', {});
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Due Amount', `${(finalTotal - receivedAmount).toFixed(2)}`],
       {},
     );
     await BluetoothEscposPrinter.printText('\n\r', {});
@@ -868,7 +880,7 @@ const InvoiceScreen = ({onBack}) => {
               marginTop: 10,
               alignItems: 'center',
             }}>
-            <Text style={{color: 'black'}}>Discount (%): </Text>
+            <Text style={{color: 'black'}}>Discount : </Text>
             <TextInput
               style={{
                 borderWidth: 1,
@@ -881,7 +893,7 @@ const InvoiceScreen = ({onBack}) => {
               }}
               onChangeText={text => setDiscount(text)}
               value={discount}
-              placeholder="Discount %"
+              placeholder="Discount"
               keyboardType="numeric"
             />
             <Text
@@ -915,6 +927,40 @@ const InvoiceScreen = ({onBack}) => {
           <View style={styles.finalTotalRow}>
             <Text style={styles.finalTotalLabel}>Final Total: </Text>
             <Text style={styles.finalTotal}>{finalTotal.toFixed(2)}</Text>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              marginBottom: 10,
+              marginTop: 0,
+              alignItems: 'center',
+            }}>
+            <Text style={{color: 'black'}}>Received Amount : </Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: '#4F8EF7',
+                marginRight: 10,
+                padding: 10,
+                flex: 1,
+                borderRadius: 5,
+                color: 'black',
+              }}
+              onChangeText={text => setReceivedAmount(text)}
+              value={receivedAmount}
+              placeholder="Receive"
+              keyboardType="numeric"
+            />
+            <Text style={{color: 'black'}}>Due Amount : </Text>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: 'bold',
+                color: 'black',
+                marginLeft: 20,
+              }}>
+              {(finalTotal - receivedAmount).toFixed(2)}
+            </Text>
           </View>
 
           {error.state === true && (
@@ -1006,7 +1052,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: 10,
-    marginBottom: 30,
+    marginBottom: 5,
     color: 'black',
   },
   finalTotalLabel: {
