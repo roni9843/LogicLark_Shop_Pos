@@ -410,6 +410,7 @@ const InvoiceScreen = ({onBack}) => {
       ['Due Amount', `${(finalTotal - receivedAmount).toFixed(2)}`],
       {},
     );
+
     await BluetoothEscposPrinter.printText('\n\r', {});
 
     // await BluetoothEscposPrinter.printText('Discount Rate: 100%\n\r', {});
