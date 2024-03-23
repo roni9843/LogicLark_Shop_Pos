@@ -418,6 +418,7 @@ const InvoiceScreen = ({onBack}) => {
     //   'After Discount Receivable: 64000.00\n\r',
     //   {},
     // );
+
     // await BluetoothEscposPrinter.printText(
     //   'Membership Card Payment: 0.00\n\r',
     //   {},
