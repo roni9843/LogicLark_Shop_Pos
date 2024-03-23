@@ -73,12 +73,73 @@ const InvoiceScreen = ({onBack}) => {
   // const [customerDetails, setCustomerDetails] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
 
+  // ? The customer history
+  const [getCustomerHistory, setGetCustomerHistory] = useState([]);
+
+  // ? previous total due
+  const [previousTotalDue, setPreviousTotalDue] = useState(0);
+
   const calculateSubtotal = () => {
     return products.reduce(
       (acc, curr) => acc + (parseFloat(curr.total) || 0),
       0,
     );
   };
+
+  useEffect(() => {
+    if (customerPhone !== '') {
+      // Assuming customersData is the array containing customer data as shown in the comment
+
+      // Find the customer with the matching phone number
+      const customer = getCustomerHistory.find(
+        customer => customer.user.user_phone === customerPhone,
+      );
+
+      if (customer) {
+        // Calculate the total due amount
+        const totalDue = customer.dues.reduce((acc, due) => acc + due.due, 0);
+
+        console.log('Total due for customer:', totalDue);
+        setPreviousTotalDue(totalDue);
+      } else {
+        console.log('Customer not found');
+      }
+    }
+  }, [customerPhone]);
+
+  useEffect(() => {
+    if (customerPhone.length > 4) {
+      const fetchData = async () => {
+        try {
+          const response = await fetch(
+            'https://logic-lark-shop-pos-backend.vercel.app/findBy1stNumber',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                firstFourDigits: `${customerPhone}`,
+              }),
+            },
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            // Handle the data received from the API
+            console.log('Data from API:', data);
+            setGetCustomerHistory(data);
+          } else {
+            console.error('Failed to fetch data:', response.status);
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+
+      fetchData();
+    }
+  }, [customerPhone]);
 
   const updateFinalTotal = () => {
     const subtotal = calculateSubtotal();
@@ -145,6 +206,9 @@ const InvoiceScreen = ({onBack}) => {
       customerName: customerName,
       // customerDetails: customerDetails,
       customerPhone: customerPhone,
+      finalTotal: finalTotal,
+      receivedAmount: receivedAmount,
+      due: finalTotal - receivedAmount,
     };
 
     const newData = detailsConsole.products.map(item => ({
@@ -736,26 +800,40 @@ const InvoiceScreen = ({onBack}) => {
               placeholder="Customer's name"
               placeholderTextColor="#A9A9A9"
             />
-            <TextInput
-              // multiline={true}
-              // numberOfLines={4}
-              style={{
-                borderWidth: 1,
-                borderColor: '#4F8EF7',
-                marginRight: 10,
-                padding: 10,
-                flex: 1,
-                borderRadius: 5,
-                color: '#4F8EF7',
-                marginVertical: 5,
-                marginBottom: 10,
-              }}
-              onChangeText={text => setCustomerPhone(text)}
-              value={customerPhone}
-              keyboardType="numeric"
-              placeholder="Customer's phone"
-              placeholderTextColor="#A9A9A9"
-            />
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#4F8EF7',
+                  marginRight: 10,
+                  padding: 10,
+                  flex: 1,
+                  borderRadius: 5,
+                  color: '#4F8EF7',
+                  marginVertical: 5,
+                }}
+                onChangeText={text => setCustomerPhone(text)}
+                value={customerPhone}
+                keyboardType="numeric"
+                placeholder="Customer's phone"
+                placeholderTextColor="#A9A9A9"
+              />
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {getCustomerHistory.map(p => (
+                <TouchableOpacity
+                  onPress={() => setCustomerPhone(p.user.user_phone)}
+                  style={styles.suggestionItem}>
+                  <Text>{p.user.user_phone}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={{color: '#4F8EF7', fontWeight: 'bold', fontSize: 18}}>
+              Previous Due {previousTotalDue} টাকা
+            </Text>
+
             {/**
            *   <TextInput
               // multiline={true}
@@ -778,6 +856,7 @@ const InvoiceScreen = ({onBack}) => {
             />
            */}
           </View>
+
           <View>
             <Text style={{color: 'black', marginVertical: 5, marginTop: 25}}>
               Product list :

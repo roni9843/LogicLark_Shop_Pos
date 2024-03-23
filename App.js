@@ -14,6 +14,7 @@ import {
 
 import {BluetoothManager} from 'react-native-bluetooth-escpos-printer';
 import {PERMISSIONS, RESULTS, requestMultiple} from 'react-native-permissions';
+import DueHistoryScreen from './DueHistory/DueHistoryScreen';
 import InvoiceScreen from './InvoiceScreen';
 import PrinterScreen from './PrinterScreen';
 import {getBluetoothData} from './services/BluetoothService';
@@ -21,20 +22,32 @@ import {getBluetoothData} from './services/BluetoothService';
 const App = () => {
   const [showPrinterScreen, setShowPrinterScreen] = useState(false);
   const [showInvoiceScreen, setShowInvoiceScreen] = useState(false);
+  const [showDueHistoryScreen, setShowDueHistoryScreen] = useState(false);
 
   const handleInvoiceButtonPress = () => {
     setShowInvoiceScreen(true);
     setShowPrinterScreen(false);
+    setShowDueHistoryScreen(false);
   };
 
   const handleBluetoothButtonPress = () => {
     setShowPrinterScreen(true);
+    setShowInvoiceScreen(false);
+    setShowDueHistoryScreen(false);
+  };
+
+  const handelDueHistoryButton = () => {
+    //console.log('clicked');
+
+    setShowDueHistoryScreen(true);
+    setShowPrinterScreen(false);
     setShowInvoiceScreen(false);
   };
 
   const handleBack = () => {
     setShowPrinterScreen(false);
     setShowInvoiceScreen(false);
+    setShowDueHistoryScreen(false);
   };
 
   // ? bluetooth
@@ -307,7 +320,7 @@ const App = () => {
 
   return (
     <SafeAreaView style={[styles.container]}>
-      {!showPrinterScreen && !showInvoiceScreen && (
+      {!showPrinterScreen && !showInvoiceScreen && !showDueHistoryScreen && (
         <View>
           <View style={styles.header}>
             <Text style={styles.textLabel}>Bell</Text>
@@ -330,13 +343,20 @@ const App = () => {
                   ? styles.menuItemInvoiceDisActive
                   : styles.menuItemInvoiceActive
               }
-              disabled={boundAddress.length < 1 ? true : false}
+              // disabled={boundAddress.length < 1 ? true : false}
               onPress={handleInvoiceButtonPress}>
               <Text style={styles.menuItemInvoiceActiveTextLabel}>
                 InVoice 🖨️
               </Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              onPress={handelDueHistoryButton}
+              style={styles.menuItemDueDisActive}>
+              <Text style={styles.menuItemInBluetoothActiveTextLabel}>
+                Due History 📃
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={handleBluetoothButtonPress}
               style={
@@ -373,6 +393,7 @@ const App = () => {
         />
       )}
       {showInvoiceScreen && <InvoiceScreen onBack={handleBack} />}
+      {showDueHistoryScreen && <DueHistoryScreen onBack={handleBack} />}
     </SafeAreaView>
   );
 };
@@ -477,6 +498,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#4F8EF7',
+    padding: 10,
+    borderRadius: 10,
+    paddingVertical: 20,
+  },
+  menuItemDueDisActive: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F429AA',
     padding: 10,
     borderRadius: 10,
     paddingVertical: 20,
