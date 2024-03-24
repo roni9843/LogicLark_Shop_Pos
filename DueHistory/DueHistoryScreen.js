@@ -1,6 +1,5 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
-  BackHandler,
   FlatList,
   StyleSheet,
   Text,
@@ -9,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-const DueHistoryScreen = ({onBack}) => {
+const DueHistoryScreen = ({setPageState}) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [data, setData] = useState([
     {
@@ -22,25 +21,6 @@ const DueHistoryScreen = ({onBack}) => {
       products: ['Product 1', 'Product 2', 'Product 3'],
     },
   ]);
-
-  // ? handle back start
-
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      handleBackPress,
-    );
-
-    return () => backHandler.remove();
-  }, []);
-
-  const handleBackPress = () => {
-    console.log('back press');
-    onBack();
-    return true; // Default behavior (exit the app)
-  };
-
-  // ? handle back end
 
   const getTotalDue = () => {
     let totalDue = 0;
@@ -135,8 +115,7 @@ const DueHistoryScreen = ({onBack}) => {
             justifyContent: 'flex-end',
             borderRadius: 10,
           }}
-          //   onPress={() => pSaveAndPrint()}
-        >
+          onPress={() => setPageState('details')}>
           <Text style={{color: 'white', fontSize: 15}}>Find</Text>
         </TouchableOpacity>
       </View>
@@ -159,6 +138,7 @@ const DueHistoryScreen = ({onBack}) => {
           <Text style={{color: '#4CAF50'}}>{'$' + getTotalDue()}</Text>
         </View>
       </View>
+
       <View
         style={{
           flexDirection: 'row',
@@ -167,7 +147,7 @@ const DueHistoryScreen = ({onBack}) => {
         }}>
         <View style={{flex: 1, alignItems: 'flex-start'}}>
           <Text style={{color: '#546E7A', marginRight: 5, fontWeight: 'bold'}}>
-            Name:
+            Name: History
           </Text>
           <Text style={{color: '#37474F'}}>{phoneNumber}</Text>
         </View>

@@ -1,14 +1,37 @@
 import React, {useEffect, useState} from 'react';
 import {BackHandler, StyleSheet, Text, View} from 'react-native';
+import DueHistoryDetails from './DueHistoryDetails';
+import DueHistoryScreen from './DueHistoryScreen';
 
 const DueLayout = ({onBack}) => {
-  const [showPopup, setShowPopup] = useState(false);
+  let pageStateLocal = 'history';
 
-  const togglePopup = () => {
-    setShowPopup(!showPopup);
+  const [pageState, setPageState] = useState(pageStateLocal);
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackPress,
+    );
+
+    return () => backHandler.remove();
+  }, [pageState]);
+
+  const handleBackPress = () => {
+    if (pageState === 'details') {
+      setPageState('history');
+      console.log('Switching to history');
+      return true; // Prevent default back behavior
+    } else if (pageState === 'history') {
+      onBack();
+      console.log('Calling onBack');
+      return true; // Prevent default back behavior
+    }
+
+    // In any other case, let the default back behavior happen
+    return false;
   };
 
-  // Sample data for demonstration
   const cardData = [
     {
       name: 'John Doe',
@@ -23,25 +46,6 @@ const DueLayout = ({onBack}) => {
     // Add more sample data as needed
   ];
 
-  // ? handle back start
-
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      handleBackPress,
-    );
-
-    return () => backHandler.remove();
-  }, []);
-
-  const handleBackPress = () => {
-    console.log('back press');
-    onBack();
-    return true; // Default behavior (exit the app)
-  };
-
-  // ? handle back end
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -49,6 +53,12 @@ const DueLayout = ({onBack}) => {
         <Text style={styles.balanceTitle}>Hasan's Store</Text>
         <Text style={styles.textLabel}>User</Text>
       </View>
+
+      {pageState === 'history' ? (
+        <DueHistoryScreen setPageState={setPageState} />
+      ) : (
+        <DueHistoryDetails setPageState={setPageState} onBack={onBack} />
+      )}
     </View>
   );
 };
