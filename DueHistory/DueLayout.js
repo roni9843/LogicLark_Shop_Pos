@@ -8,6 +8,8 @@ const DueLayout = ({onBack}) => {
 
   const [pageState, setPageState] = useState(pageStateLocal);
 
+  const [individualUserDue, setIndividualUserDue] = useState();
+
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -30,6 +32,38 @@ const DueLayout = ({onBack}) => {
 
     // In any other case, let the default back behavior happen
     return false;
+  };
+
+  const [allUserInfo, setAllUserInfo] = useState([]);
+
+  useEffect(() => {
+    callFetch();
+  }, []);
+
+  const callFetch = async () => {
+    try {
+      const response = await fetch(
+        'https://logic-lark-shop-pos-backend.vercel.app/findAllPhoneWithDue',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // Handle the data received from the API
+        console.log('Data from API:', data);
+        setAllUserInfo(data);
+      } else {
+        console.error('Failed to fetch data:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
   const cardData = [
@@ -55,9 +89,17 @@ const DueLayout = ({onBack}) => {
       </View>
 
       {pageState === 'history' ? (
-        <DueHistoryScreen setPageState={setPageState} />
+        <DueHistoryScreen
+          setIndividualUserDue={setIndividualUserDue}
+          allUserInfo={allUserInfo}
+          setPageState={setPageState}
+        />
       ) : (
-        <DueHistoryDetails setPageState={setPageState} onBack={onBack} />
+        <DueHistoryDetails
+          individualUserDue={individualUserDue}
+          setPageState={setPageState}
+          onBack={onBack}
+        />
       )}
     </View>
   );
@@ -80,7 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    marginBottom: 10,
+    marginBottom: 3,
   },
   balanceTitle: {
     fontSize: 24,

@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -8,78 +9,73 @@ import {
   View,
 } from 'react-native';
 
-const DueHistoryScreen = ({setPageState}) => {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [data, setData] = useState([
-    {
-      id: '1',
-      name: 'John Doe',
-      address: '123 Main St',
-      time: '10:00 AM',
-      amount: 50,
-      receivedAmount: 30,
-      products: ['Product 1', 'Product 2', 'Product 3'],
-    },
-  ]);
+const DueHistoryScreen = ({
+  setPageState,
+  allUserInfo,
+  setIndividualUserDue,
+}) => {
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const getTotalDue = () => {
+  const filteredUserInfo = allUserInfo.filter(item => {
+    return (
+      item.user.user_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.user.user_phone.includes(searchQuery)
+    );
+  });
+  const renderItem = ({item}) => {
+    // Calculate total due for the user
     let totalDue = 0;
-    data.forEach(item => {
-      totalDue += item.amount - item.receivedAmount;
+    item.dues.forEach(due => {
+      totalDue += due.due;
     });
-    return totalDue;
+
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          setIndividualUserDue(item);
+          setPageState('details');
+        }}
+        style={{
+          backgroundColor: '#FFF9E7', // Light golden background
+          borderRadius: 10,
+          marginBottom: 15,
+          shadowColor: '#FFD600', // Golden shadow
+          shadowOffset: {width: 0, height: 2},
+          shadowOpacity: 0.5, // Increased shadow opacity
+          shadowRadius: 5, // Increased shadow radius
+          elevation: 5,
+          padding: 15,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}>
+        <View style={{flex: 1}}>
+          <Text style={{color: '#37474F', fontWeight: 'bold'}}>
+            {item.user.user_name}
+          </Text>
+          <Text style={{color: '#546E7A', marginBottom: 5}}>
+            {item.user.user_phone}
+          </Text>
+        </View>
+        <View style={{alignItems: 'flex-end'}}>
+          <Text style={{color: '#F44336', fontWeight: 'bold', fontSize: 18}}>
+            Total Due: ৳ {totalDue}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
   };
 
-  const renderItem = ({item}) => (
-    <View
-      style={{
-        backgroundColor: '#FFF9E7', // Light golden background
-        borderRadius: 10,
-        marginBottom: 15,
-        shadowColor: '#FFD600', // Golden shadow
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.5, // Increased shadow opacity
-        shadowRadius: 5, // Increased shadow radius
-        elevation: 5,
-        padding: 15,
-      }}>
-      <View style={{flexDirection: 'row', marginBottom: 10}}>
-        <Text style={{color: '#FFD600', marginRight: 5, fontWeight: 'bold'}}>
-          Time:
-        </Text>
-        <Text style={{color: '#37474F'}}>{item.time}</Text>
+  const handleSearch = text => {
+    setSearchQuery(text);
+  };
+
+  const renderListEmptyComponent = () => {
+    return (
+      <View style={styles.emptyContainer}>
+        <ActivityIndicator size="large" color="#1ACAF7" />
       </View>
-      <View style={{flexDirection: 'row', marginBottom: 10}}>
-        <Text style={{color: '#FFD600', marginRight: 5, fontWeight: 'bold'}}>
-          Total Amount:
-        </Text>
-        <Text style={{color: '#FF6D00'}}>{'$' + item.amount}</Text>
-        {/* Orange total amount */}
-      </View>
-      <View style={{flexDirection: 'row', marginBottom: 10}}>
-        <Text style={{color: '#FFD600', marginRight: 5, fontWeight: 'bold'}}>
-          Received Amount:
-        </Text>
-        <Text style={{color: '#FF6D00'}}>{'$' + item.receivedAmount}</Text>
-        {/* Orange received amount */}
-      </View>
-      <View style={{flexDirection: 'row', marginBottom: 10}}>
-        <Text style={{color: '#FFD600', marginRight: 5, fontWeight: 'bold'}}>
-          Due Amount:
-        </Text>
-        <Text style={{color: '#F44336'}}>
-          {'$' + (item.amount - item.receivedAmount)}
-        </Text>
-        {/* Red due amount */}
-      </View>
-      <View style={{flexDirection: 'row', marginBottom: 10}}>
-        <Text style={{color: '#FFD600', marginRight: 5, fontWeight: 'bold'}}>
-          Products:
-        </Text>
-        <Text style={{color: '#37474F'}}>{item.products.join(', ')}</Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View
@@ -103,66 +99,18 @@ const DueHistoryScreen = ({setPageState}) => {
             backgroundColor: '#FFF',
             color: '#37474F',
           }}
-          placeholder="Enter Phone Number"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
+          placeholder="Enter Phone Number or Name"
+          value={searchQuery}
+          onChangeText={handleSearch}
         />
-        <TouchableOpacity
-          style={{
-            padding: 15,
-            marginVertical: 10,
-            backgroundColor: '#1ACAF7',
-            justifyContent: 'flex-end',
-            borderRadius: 10,
-          }}
-          onPress={() => setPageState('details')}>
-          <Text style={{color: 'white', fontSize: 15}}>Find</Text>
-        </TouchableOpacity>
-      </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginBottom: 10,
-        }}>
-        <View style={{flex: 1, alignItems: 'flex-start'}}>
-          <Text style={{color: '#546E7A', marginRight: 5, fontWeight: 'bold'}}>
-            Mobile Number:
-          </Text>
-          <Text style={{color: '#37474F'}}>{phoneNumber}</Text>
-        </View>
-        <View style={{flex: 1, alignItems: 'flex-start'}}>
-          <Text style={{color: '#546E7A', marginRight: 5, fontWeight: 'bold'}}>
-            Total Due:
-          </Text>
-          <Text style={{color: '#4CAF50'}}>{'$' + getTotalDue()}</Text>
-        </View>
       </View>
 
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginBottom: 10,
-        }}>
-        <View style={{flex: 1, alignItems: 'flex-start'}}>
-          <Text style={{color: '#546E7A', marginRight: 5, fontWeight: 'bold'}}>
-            Name: History
-          </Text>
-          <Text style={{color: '#37474F'}}>{phoneNumber}</Text>
-        </View>
-        <View style={{flex: 1, alignItems: 'flex-start'}}>
-          <Text style={{color: '#546E7A', marginRight: 5, fontWeight: 'bold'}}>
-            Address:
-          </Text>
-          <Text style={{color: '#4CAF50'}}>{'$' + getTotalDue()}</Text>
-        </View>
-      </View>
       <FlatList
-        data={data}
+        data={searchQuery ? filteredUserInfo : allUserInfo}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={renderListEmptyComponent}
       />
     </View>
   );

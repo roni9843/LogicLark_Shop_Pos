@@ -355,7 +355,7 @@ const InvoiceScreen = ({onBack}) => {
 
       try {
         const response = await fetch(
-          'http://192.168.31.228:8000/createUserAndDue',
+          'https://logic-lark-shop-pos-backend.vercel.app/createUserAndDue',
           {
             method: 'POST',
             headers: {
