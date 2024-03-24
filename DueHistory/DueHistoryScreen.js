@@ -1,5 +1,6 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
+  BackHandler,
   FlatList,
   StyleSheet,
   Text,
@@ -8,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-const DueHistoryScreen = () => {
+const DueHistoryScreen = ({onBack}) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [data, setData] = useState([
     {
@@ -21,6 +22,25 @@ const DueHistoryScreen = () => {
       products: ['Product 1', 'Product 2', 'Product 3'],
     },
   ]);
+
+  // ? handle back start
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackPress,
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
+  const handleBackPress = () => {
+    console.log('back press');
+    onBack();
+    return true; // Default behavior (exit the app)
+  };
+
+  // ? handle back end
 
   const getTotalDue = () => {
     let totalDue = 0;
@@ -109,20 +129,15 @@ const DueHistoryScreen = () => {
         />
         <TouchableOpacity
           style={{
-            backgroundColor: '#4CAF50',
-            paddingVertical: 12,
-            paddingHorizontal: 20,
-            borderRadius: 25,
-            alignItems: 'center',
-            justifyContent: 'center',
-            shadowColor: '#000',
-            shadowOffset: {width: 0, height: 2},
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
+            padding: 15,
+            marginVertical: 10,
+            backgroundColor: '#1ACAF7',
+            justifyContent: 'flex-end',
+            borderRadius: 10,
           }}
-          onPress={() => console.log('Search button pressed')}>
-          <Text style={{color: '#FFF', fontWeight: 'bold'}}>Search</Text>
+          //   onPress={() => pSaveAndPrint()}
+        >
+          <Text style={{color: 'white', fontSize: 15}}>Find</Text>
         </TouchableOpacity>
       </View>
       <View

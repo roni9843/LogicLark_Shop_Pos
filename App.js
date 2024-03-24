@@ -14,7 +14,7 @@ import {
 
 import {BluetoothManager} from 'react-native-bluetooth-escpos-printer';
 import {PERMISSIONS, RESULTS, requestMultiple} from 'react-native-permissions';
-import DueHistoryScreen from './DueHistory/DueHistoryScreen';
+import DueLayout from './DueHistory/DueLayout';
 import InvoiceScreen from './InvoiceScreen';
 import PrinterScreen from './PrinterScreen';
 import {getBluetoothData} from './services/BluetoothService';
@@ -393,7 +393,8 @@ const App = () => {
         />
       )}
       {showInvoiceScreen && <InvoiceScreen onBack={handleBack} />}
-      {showDueHistoryScreen && <DueHistoryScreen onBack={handleBack} />}
+
+      {showDueHistoryScreen && <DueLayout onBack={handleBack}></DueLayout>}
     </SafeAreaView>
   );
 };
