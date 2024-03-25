@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {BackHandler, StyleSheet, Text, View} from 'react-native';
+import {API_URL} from '../api_link';
 import DueHistoryDetails from './DueHistoryDetails';
 import DueHistoryScreen from './DueHistoryScreen';
 
@@ -42,16 +43,13 @@ const DueLayout = ({onBack}) => {
 
   const callFetch = async () => {
     try {
-      const response = await fetch(
-        'http://192.168.31.228:8000/findAllPhoneWithDue',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({}),
+      const response = await fetch(`${API_URL}/findAllPhoneWithDue`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({}),
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -96,6 +94,7 @@ const DueLayout = ({onBack}) => {
         />
       ) : (
         <DueHistoryDetails
+          callFetchParent={callFetch}
           individualUserDue={individualUserDue}
           setPageState={setPageState}
           onBack={onBack}

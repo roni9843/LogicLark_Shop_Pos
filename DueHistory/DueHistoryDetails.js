@@ -1,14 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import {API_URL} from '../api_link';
 
-const DueHistoryDetails = ({individualUserDue}) => {
+const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
   console.log('this is id :', individualUserDue);
 
   useEffect(() => {
@@ -16,33 +18,141 @@ const DueHistoryDetails = ({individualUserDue}) => {
   }, [individualUserDue]);
 
   const [userInfo, setUserInfo] = useState({});
+  const [userDueAndInvoiceHistory, setUserDueAndInvoiceHistory] = useState([]);
 
   const callFetch = async () => {
     try {
-      const response = await fetch(
-        'http://192.168.31.228:8000/findAndCheckDue',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: individualUserDue,
-          }),
+      const response = await fetch(`${API_URL}/findAndCheckDue`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          userId: individualUserDue,
+        }),
+      });
 
       if (response.ok) {
         const data = await response.json();
         // Handle the data received from the API
         console.log('Data from API:', data);
 
+        // Sort the merged array by date in descending order (from new to old)
+        // Set the sorted array to state
         setUserInfo(data);
+
+        const modifiedData = {
+          ...data,
+          invoiceHistories: data.invoiceHistories.map(invoice => ({
+            ...invoice,
+            date: invoice.buyDate,
+          })),
+        };
+
+        const mergedArray = [
+          ...modifiedData.dueReceived,
+          ...modifiedData.invoiceHistories,
+        ];
+
+        setUserDueAndInvoiceHistory(
+          mergedArray.sort((a, b) => new Date(b.date) - new Date(a.date)),
+        );
       } else {
         console.error('Failed to fetch data:', response.status);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const [userAmount, setUserAmount] = useState('');
+
+  const handleAmountChange = text => {
+    // Ensure only numeric input and up to 2 decimal places
+    if (/^\d*\.?\d{0,2}$/.test(text) || text === '') {
+      // Check if the entered amount is less than or equal to 40
+      if (
+        (parseFloat(text) <= userInfo?.user?.due_amount || text === '') &&
+        (text === '' || text[text.length - 1] !== '+')
+      ) {
+        // Update the amount if it's valid
+        setUserAmount(text);
+      }
+    }
+  };
+
+  const [btnDisable, setBtnDisable] = useState(false);
+
+  const sendDataToBackend = async () => {
+    setBtnDisable(true);
+
+    try {
+      // Object to send to the backend
+      const dataToSend = {
+        receive_id: '60f743c292f63b50f01afab1',
+        userId: individualUserDue,
+        date: new Date(),
+        received_amount: parseInt(userAmount),
+        previous_due: parseInt(userInfo?.user?.due_amount - userAmount),
+        due_history: parseInt(userInfo?.user?.due_amount),
+      };
+
+      // Sending the object to the backend URL
+      const response = await fetch(`${API_URL}/createDue`, {
+        method: 'POST', // Adjust the method as needed (GET, POST, etc.)
+        headers: {
+          'Content-Type': 'application/json', // Specify content type
+        },
+        body: JSON.stringify(dataToSend), // Convert object to JSON string
+      });
+
+      // Checking if the request was successful (status code 200)
+      if (response.ok) {
+        const responseData = await response.json(); // Parse response JSON
+        console.log('Response from backend:', responseData);
+
+        setUserInfo(responseData);
+
+        const modifiedData = {
+          ...responseData,
+          invoiceHistories: responseData.invoiceHistories.map(invoice => ({
+            ...invoice,
+            date: invoice.buyDate,
+          })),
+        };
+
+        const mergedArray = [
+          ...modifiedData.dueReceived,
+          ...modifiedData.invoiceHistories,
+        ];
+
+        setUserDueAndInvoiceHistory(
+          mergedArray.sort((a, b) => new Date(b.date) - new Date(a.date)),
+        );
+
+        // Handle the response data as needed
+
+        callFetchParent();
+        setUserAmount('');
+
+        Keyboard.dismiss();
+        setBtnDisable(false);
+
+        // Assuming "successful" means some condition based on the response
+        // Show a success notification here
+
+        alert('Data sent successfully!');
+      } else {
+        console.error('Failed to fetch:', response.status);
+        // Handle error responses
+        alert('Failed to send data. Please try again later.');
+        setBtnDisable(true);
+      }
+    } catch (error) {
+      console.error('Error sending data to backend:', error);
+      // Handle errors
+      alert('Error sending data to backend. Please try again later.');
+      setBtnDisable(true);
     }
   };
 
@@ -105,6 +215,7 @@ const DueHistoryDetails = ({individualUserDue}) => {
 
   return (
     <ScrollView
+      keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
         backgroundColor: '#F0F2F5',
         paddingHorizontal: 20,
@@ -142,7 +253,7 @@ const DueHistoryDetails = ({individualUserDue}) => {
             Name:
           </Text>
           <Text style={{flex: 2, color: '#333', fontWeight: 'bold'}}>
-            {userInfo?.user_name ? userInfo?.user_name : 'N/A'}
+            {userInfo?.user?.user_name ? userInfo?.user?.user_name : 'N/A'}
           </Text>
         </View>
 
@@ -156,7 +267,7 @@ const DueHistoryDetails = ({individualUserDue}) => {
             Phone Number:
           </Text>
           <Text style={{flex: 2, color: '#333', fontWeight: 'bold'}}>
-            {userInfo?.user_phone ? userInfo?.user_phone : 'N/A'}
+            {userInfo?.user?.user_phone ? userInfo?.user?.user_phone : 'N/A'}
           </Text>
         </View>
 
@@ -169,7 +280,11 @@ const DueHistoryDetails = ({individualUserDue}) => {
           <Text style={{flex: 1, fontWeight: 'bold', color: '#555'}}>
             Total Due:
           </Text>
-          <Text style={{flex: 2, color: '#333'}}>200</Text>
+          <Text style={{flex: 2, color: '#333'}}>
+            {userInfo?.user?.due_amount ? userInfo?.user?.due_amount : 'N/A'}{' '}
+            {userAmount && '-'} {userAmount} {userAmount && '='}{' '}
+            {userAmount && userInfo?.user?.due_amount - userAmount}
+          </Text>
         </View>
 
         <View
@@ -189,27 +304,39 @@ const DueHistoryDetails = ({individualUserDue}) => {
               padding: 8,
               borderRadius: 5,
               backgroundColor: '#FFF',
+              color: '#000', // Setting text color to black
             }}
             placeholder="Enter received amount"
             keyboardType="numeric"
-            // Add onChangeText handler here
+            value={userAmount}
+            onChangeText={handleAmountChange}
           />
         </View>
 
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#4F8EF7',
-            paddingVertical: 10,
-            borderRadius: 5,
-            alignItems: 'center',
-          }}
-          onPress={() => {
-            // Add your button press logic here
-          }}>
-          <Text style={{color: '#FFF', fontWeight: 'bold'}}>Submit</Text>
-        </TouchableOpacity>
+        {btnDisable ? (
+          <View
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <ActivityIndicator size="large" color="#333" />
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#4F8EF7',
+              paddingVertical: 10,
+              borderRadius: 5,
+              alignItems: 'center',
+            }}
+            onPress={() => {
+              userAmount && sendDataToBackend();
+            }}>
+            <Text style={{color: '#FFF', fontWeight: 'bold'}}>Submit</Text>
+          </TouchableOpacity>
+        )}
       </View>
-
       {(!userInfo || Object.keys(userInfo).length === 0) && (
         <View
           style={{
@@ -221,126 +348,150 @@ const DueHistoryDetails = ({individualUserDue}) => {
         </View>
       )}
 
-      {userInfo &&
-        userInfo?.invoiceHistories?.map((due, index) => (
-          <View
-            key={index}
-            style={{
-              marginBottom: 20,
-              backgroundColor: '#FFF',
-              borderRadius: 10,
-              padding: 20,
-              shadowColor: '#000',
-              shadowOffset: {width: 0, height: 2},
-              shadowOpacity: 0.2,
-              shadowRadius: 2,
-              elevation: 3,
-            }}>
-            {/* Display user details */}
+      {userDueAndInvoiceHistory.map(dt => console.log('this is roni'))}
 
-            {/* Display due details */}
-
-            {/* Add your icon here */}
-
+      {userDueAndInvoiceHistory &&
+        userDueAndInvoiceHistory.map((due, index) =>
+          due.receive_id ? (
             <View
               style={{
-                flexDirection: 'row',
-                justifyContent: 'flex-end',
-                alignItems: 'flex-end',
-                marginBottom: 5,
+                marginBottom: 20,
+                backgroundColor: '#C8E6C9', // Lighter green background
+                borderRadius: 10,
+                padding: 20,
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 2},
+                shadowOpacity: 0.2,
+                shadowRadius: 2,
+                elevation: 3,
               }}>
-              <TouchableOpacity>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
                 <Text
                   style={{
                     fontSize: 22,
                     fontWeight: 'bold',
-                    color: '#4F8EF7',
-                    marginBottom: 5,
+                    color: '#000',
+                    textDecorationLine: 'underline',
                   }}>
-                  🖨️
+                  Due Received: {due.due_history} ({due.previous_due})
                 </Text>
-              </TouchableOpacity>
+                <TouchableOpacity>
+                  <Text
+                    style={{fontSize: 22, fontWeight: 'bold', color: '#000'}}>
+                    🖨️
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{marginTop: 10}}>
+                {/* Add spacing between sections */}
+                <Text style={{fontWeight: 'bold', color: '#000', fontSize: 16}}>
+                  Details:
+                </Text>
+                <View style={{marginBottom: 5}}>
+                  <Text style={{color: '#000'}}>
+                    <Text style={{fontWeight: 'bold'}}>Receive ID:</Text>{' '}
+                    {due.receive_id}
+                  </Text>
+                </View>
+                <View style={{marginBottom: 5}}>
+                  <Text style={{color: '#000'}}>
+                    <Text style={{fontWeight: 'bold'}}>Received Amount:</Text>{' '}
+                    {due.received_amount}
+                  </Text>
+                </View>
+                <View style={{marginBottom: 5}}>
+                  <Text style={{color: '#000'}}>
+                    <Text style={{fontWeight: 'bold'}}>Date:</Text> {due.date}
+                  </Text>
+                </View>
+              </View>
             </View>
-
+          ) : (
             <View
+              key={index}
               style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                marginBottom: 5,
-              }}>
-              <Text
-                style={{fontSize: 22, fontWeight: 'bold', color: '#4F8EF7'}}>
-                Items
-              </Text>
-              <Text style={{color: 'gray', fontSize: 14, textAlign: 'right'}}>
-                Date: {due.buyDate ? formatDate(due.buyDate) : 'N/A'}
-              </Text>
-            </View>
-            {/* Iterate over dues */}
-            <View
-              style={{
-                backgroundColor: '#F0F2F5',
-                padding: 10,
-                borderRadius: 5,
-                marginBottom: 10,
+                marginBottom: 20,
+                backgroundColor: '#FFF',
+                borderRadius: 10,
+                padding: 20,
                 shadowColor: '#000',
                 shadowOffset: {width: 0, height: 2},
-                shadowOpacity: 0.1,
-                shadowRadius: 1,
-                elevation: 1,
-                flexDirection: 'row', // Align items horizontally
-                alignItems: 'center', // Center items vertically
-                justifyContent: 'space-between', // Space between items
-                borderBottomWidth: 2,
-                borderBottomColor: '#ccc',
+                shadowOpacity: 0.2,
+                shadowRadius: 2,
+                elevation: 3,
               }}>
-              <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
-                Name
-              </Text>
-              <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
-                Price
-              </Text>
-              <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
-                Qty
-              </Text>
-              <Text
-                style={{
-                  color: '#333',
-                  fontWeight: 'bold',
-                  textAlign: 'right',
-                  flex: 1,
-                }}>
-                Total
-              </Text>
-            </View>
-            {due.details.map((detail, i) => (
+              {/* Display user details */}
+
+              {/* Display due details */}
+
+              {/* Add your icon here */}
+
               <View
-                key={i}
                 style={{
-                  backgroundColor: '#FFF',
-                  padding: 5,
-                  borderRadius: 5,
-                  borderBottomColor: 'gray',
-                  borderBottomWidth: 1,
+                  flexDirection: 'row',
+                  justifyContent: 'flex-end',
+                  alignItems: 'flex-end',
                   marginBottom: 5,
+                }}>
+                <TouchableOpacity>
+                  <Text
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 'bold',
+                      color: '#4F8EF7',
+                      marginBottom: 5,
+                    }}>
+                    🖨️
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-end',
+                  marginBottom: 5,
+                }}>
+                <Text
+                  style={{fontSize: 22, fontWeight: 'bold', color: '#4F8EF7'}}>
+                  Items
+                </Text>
+                <Text style={{color: 'gray', fontSize: 14, textAlign: 'right'}}>
+                  Date: {due.buyDate ? formatDate(due.buyDate) : 'N/A'}
+                </Text>
+              </View>
+              {/* Iterate over dues */}
+              <View
+                style={{
+                  backgroundColor: '#F0F2F5',
+                  padding: 10,
+                  borderRadius: 5,
+                  marginBottom: 10,
                   shadowColor: '#000',
-                  // shadowOffset: {width: 0, height: 2},
-                  // shadowOpacity: 0.1,
+                  shadowOffset: {width: 0, height: 2},
+                  shadowOpacity: 0.1,
                   shadowRadius: 1,
-                  // elevation: 1,
+                  elevation: 1,
                   flexDirection: 'row', // Align items horizontally
                   alignItems: 'center', // Center items vertically
                   justifyContent: 'space-between', // Space between items
+                  borderBottomWidth: 2,
+                  borderBottomColor: '#ccc',
                 }}>
                 <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
-                  {detail.name ? detail.name : 'N/A'}
+                  Name
                 </Text>
-                <Text style={{color: '#333', flex: 1}}>
-                  {detail.price ? detail.price : 'N/A'}
+                <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
+                  Price
                 </Text>
-                <Text style={{color: '#333', flex: 1}}>
-                  {detail.qty ? detail.qty : 'N/A'}
+                <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
+                  Qty
                 </Text>
                 <Text
                   style={{
@@ -349,96 +500,155 @@ const DueHistoryDetails = ({individualUserDue}) => {
                     textAlign: 'right',
                     flex: 1,
                   }}>
-                  {detail.total ? detail.total : 'N/A'}
+                  Total
                 </Text>
               </View>
-            ))}
-            {/* Display other due details */}
-            <View
-              style={{
-                backgroundColor: '#FFF',
-                padding: 5,
-                borderRadius: 5,
-                // marginBottom: 10,
-                //  shadowOffset: {width: 0, height: 2},
-                //  shadowOpacity: 0.1,
-                //  shadowRadius: 1,
-                // elevation: 1,
-                flexDirection: 'row', // Arrange items horizontally
-                justifyContent: 'space-between', // Space between items
-              }}>
-              <View>
-                <Text
-                  style={{color: '#333', fontWeight: 'bold', marginBottom: 5}}>
-                  Subtotal:
-                </Text>
-                <Text
-                  style={{color: '#333', fontWeight: 'bold', marginBottom: 5}}>
-                  Discount:
-                </Text>
-                <Text
-                  style={{color: '#333', fontWeight: 'bold', marginBottom: 5}}>
-                  Total:
-                </Text>
-                <Text
-                  style={{color: '#333', fontWeight: 'bold', marginBottom: 5}}>
-                  Account Received:
-                </Text>
-                <Text
-                  style={{color: '#333', fontWeight: 'bold', marginBottom: 5}}>
-                  Due:
-                </Text>
-              </View>
-              <View>
-                <Text
+              {due.details.map((detail, i) => (
+                <View
+                  key={i}
                   style={{
-                    color: '#333',
-                    fontWeight: 'bold',
+                    backgroundColor: '#FFF',
+                    padding: 5,
+                    borderRadius: 5,
+                    borderBottomColor: 'gray',
+                    borderBottomWidth: 1,
                     marginBottom: 5,
-                    textAlign: 'right',
+                    shadowColor: '#000',
+                    // shadowOffset: {width: 0, height: 2},
+                    // shadowOpacity: 0.1,
+                    shadowRadius: 1,
+                    // elevation: 1,
+                    flexDirection: 'row', // Align items horizontally
+                    alignItems: 'center', // Center items vertically
+                    justifyContent: 'space-between', // Space between items
                   }}>
-                  ৳{due.subTotal ? due.subTotal : 'N/A'}
-                </Text>
-                <Text
-                  style={{
-                    color: '#333',
-                    fontWeight: 'bold',
-                    marginBottom: 5,
-                    textAlign: 'right',
-                  }}>
-                  - ৳{due.discount ? due.discount : 'N/A'}
-                </Text>
-                <Text
-                  style={{
-                    color: '#333',
-                    fontWeight: 'bold',
-                    marginBottom: 5,
-                    textAlign: 'right',
-                  }}>
-                  ৳{due.total ? due.total : 'N/A'}
-                </Text>
-                <Text
-                  style={{
-                    color: '#333',
-                    fontWeight: 'bold',
-                    marginBottom: 5,
-                    textAlign: 'right',
-                  }}>
-                  ৳{due.accountReceived ? due.accountReceived : 'N/A'}
-                </Text>
-                <Text
-                  style={{
-                    color: '#333',
-                    fontWeight: 'bold',
-                    marginBottom: 5,
-                    textAlign: 'right',
-                  }}>
-                  ৳{due.due ? due.due : 'N/A'}
-                </Text>
+                  <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
+                    {detail.name ? detail.name : 'N/A'}
+                  </Text>
+                  <Text style={{color: '#333', flex: 1}}>
+                    {detail.price ? detail.price : 'N/A'}
+                  </Text>
+                  <Text style={{color: '#333', flex: 1}}>
+                    {detail.qty ? detail.qty : 'N/A'}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      textAlign: 'right',
+                      flex: 1,
+                    }}>
+                    {detail.total ? detail.total : 'N/A'}
+                  </Text>
+                </View>
+              ))}
+              {/* Display other due details */}
+              <View
+                style={{
+                  backgroundColor: '#FFF',
+                  padding: 5,
+                  borderRadius: 5,
+                  // marginBottom: 10,
+                  //  shadowOffset: {width: 0, height: 2},
+                  //  shadowOpacity: 0.1,
+                  //  shadowRadius: 1,
+                  // elevation: 1,
+                  flexDirection: 'row', // Arrange items horizontally
+                  justifyContent: 'space-between', // Space between items
+                }}>
+                <View>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                    }}>
+                    Subtotal:
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                    }}>
+                    Discount:
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                    }}>
+                    Total:
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                    }}>
+                    Account Received:
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                    }}>
+                    Due:
+                  </Text>
+                </View>
+                <View>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                      textAlign: 'right',
+                    }}>
+                    ৳{due.subTotal ? due.subTotal : 'N/A'}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                      textAlign: 'right',
+                    }}>
+                    - ৳{due.discount ? due.discount : 'N/A'}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                      textAlign: 'right',
+                    }}>
+                    ৳{due.total ? due.total : 'N/A'}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                      textAlign: 'right',
+                    }}>
+                    ৳{due.accountReceived ? due.accountReceived : 'N/A'}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#333',
+                      fontWeight: 'bold',
+                      marginBottom: 5,
+                      textAlign: 'right',
+                    }}>
+                    ৳{due.due ? due.due : 'N/A'}
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
-        ))}
+          ),
+        )}
     </ScrollView>
   );
 };

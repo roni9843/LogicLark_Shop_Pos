@@ -14,6 +14,7 @@ import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
 // import BluetoothEscposPrinter from 'react-native-bluetooth-escpos-printer';
 
 import {useState} from 'react';
+import {API_URL} from './api_link';
 import PrintInvoicePrinter from './services/PrintInvoicePrinter';
 import {
   getDataFromLocalStorage,
@@ -102,18 +103,15 @@ const InvoiceScreen = ({onBack}) => {
     if (customerPhone.length > 4) {
       const fetchData = async () => {
         try {
-          const response = await fetch(
-            'http://192.168.31.228:8000/findBy1stNumber',
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                firstDigits: customerPhone.toString(),
-              }),
+          const response = await fetch(`${API_URL}/findBy1stNumber`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
             },
-          );
+            body: JSON.stringify({
+              firstDigits: customerPhone.toString(),
+            }),
+          });
 
           if (response.ok) {
             const data = await response.json();
@@ -344,16 +342,13 @@ const InvoiceScreen = ({onBack}) => {
       };
 
       try {
-        const response = await fetch(
-          'http://192.168.31.228:8000/createUserAndDue',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(fetchData),
+        const response = await fetch(`${API_URL}/createUserAndDue`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        );
+          body: JSON.stringify(fetchData),
+        });
 
         if (response.ok) {
           const data = await response.json();

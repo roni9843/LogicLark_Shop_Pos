@@ -30,10 +30,10 @@ const DueHistoryScreen = ({
           setPageState('details');
         }}
         style={{
-          backgroundColor: '#FFF9E7', // Light golden background
+          backgroundColor: item.due_amount === 0 ? '#C8E6C9' : '#FFF9E7', // Change background color based on due_amount
           borderRadius: 10,
           marginBottom: 15,
-          shadowColor: '#FFD600', // Golden shadow
+          shadowColor: item.due_amount === 0 ? '#4CAF50' : '#FFD600', // Golden shadow
           shadowOffset: {width: 0, height: 2},
           shadowOpacity: 0.5, // Increased shadow opacity
           shadowRadius: 5, // Increased shadow radius
