@@ -59,10 +59,6 @@ const InvoiceScreen = ({onBack}) => {
     }));
   };
 
-  const print = async () => {
-    // On iOS/android prints the given html. On web prints the HTML from the current page.
-  };
-
   const [products, setProducts] = useState([
     {name: '', price: '', qty: '', total: 0},
   ]);
@@ -75,7 +71,7 @@ const InvoiceScreen = ({onBack}) => {
   const [customerPhone, setCustomerPhone] = useState('');
 
   // ? The customer history
-  const [getCustomerHistory, setGetCustomerHistory] = useState([]);
+  const [customerInfoFetch, setCustomerInfoFetch] = useState([]);
 
   // ? previous total due
   const [previousTotalDue, setPreviousTotalDue] = useState(0);
@@ -92,18 +88,12 @@ const InvoiceScreen = ({onBack}) => {
       // Assuming customersData is the array containing customer data as shown in the comment
 
       // Find the customer with the matching phone number
-      const customer = getCustomerHistory.find(
-        customer => customer.user.user_phone === customerPhone,
+      const customer = customerInfoFetch.find(
+        customer => customer.user_phone === customerPhone,
       );
 
       if (customer) {
-        // Calculate the total due amount
-        const totalDue = customer.dues.reduce((acc, due) => acc + due.due, 0);
-
-        console.log('Total due for customer:', totalDue);
-        setPreviousTotalDue(totalDue);
-      } else {
-        console.log('Customer not found');
+        setPreviousTotalDue(customer.due_amount);
       }
     }
   }, [customerPhone]);
@@ -113,14 +103,14 @@ const InvoiceScreen = ({onBack}) => {
       const fetchData = async () => {
         try {
           const response = await fetch(
-            'https://logic-lark-shop-pos-backend.vercel.app/findBy1stNumber',
+            'http://192.168.31.228:8000/findBy1stNumber',
             {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                firstFourDigits: `${customerPhone}`,
+                firstDigits: customerPhone.toString(),
               }),
             },
           );
@@ -129,7 +119,7 @@ const InvoiceScreen = ({onBack}) => {
             const data = await response.json();
             // Handle the data received from the API
             console.log('Data from API:', data);
-            setGetCustomerHistory(data);
+            setCustomerInfoFetch(data);
           } else {
             console.error('Failed to fetch data:', response.status);
           }
@@ -342,20 +332,20 @@ const InvoiceScreen = ({onBack}) => {
 
     if (printCountValidation === 1) {
       const fetchData = {
+        user_name: invoiceDetails.customerName,
         user_phone: `${invoiceDetails.customerPhone}`,
-        buyDate: date,
+        inId: '609db63b0b24c939cc41a898',
         details: invoiceDetails.products,
         subTotal: parseInt(invoiceDetails.subtotal),
         discount: parseInt(invoiceDetails.discount),
         total: parseInt(invoiceDetails.finalTotal),
         accountReceived: parseInt(invoiceDetails.receivedAmount),
         due: parseInt(invoiceDetails.due),
-        user_name: invoiceDetails.customerName,
       };
 
       try {
         const response = await fetch(
-          'https://logic-lark-shop-pos-backend.vercel.app/createUserAndDue',
+          'http://192.168.31.228:8000/createUserAndDue',
           {
             method: 'POST',
             headers: {
@@ -380,6 +370,9 @@ const InvoiceScreen = ({onBack}) => {
           setFinalTotal(0);
           setDiscount('');
           setReceivedAmount(0);
+
+          setCustomerInfoFetch([]);
+          setPreviousTotalDue(0);
         } else {
           console.error('Failed to fetch data:', response.status);
         }
@@ -496,6 +489,12 @@ const InvoiceScreen = ({onBack}) => {
       ['Due Amount', `${(finalTotal - receivedAmount).toFixed(2)}`],
       {},
     );
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Previous Due', `${previousTotalDue.toFixed(2)}`],
+      {},
+    );
 
     await BluetoothEscposPrinter.printText('\n\r', {});
 
@@ -529,22 +528,6 @@ const InvoiceScreen = ({onBack}) => {
             </Text>
           </View>
           <View>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: '#4F8EF7',
-                marginRight: 10,
-                padding: 10,
-                flex: 1,
-                borderRadius: 5,
-                color: '#4F8EF7',
-                marginVertical: 5,
-              }}
-              onChangeText={text => setCustomerName(text)}
-              value={customerName}
-              placeholder="Customer's name"
-              placeholderTextColor="#A9A9A9"
-            />
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <TextInput
                 style={{
@@ -563,21 +546,37 @@ const InvoiceScreen = ({onBack}) => {
                 placeholder="Customer's phone"
                 placeholderTextColor="#A9A9A9"
               />
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#4F8EF7',
+                  marginRight: 10,
+                  padding: 10,
+                  flex: 1,
+                  borderRadius: 5,
+                  color: '#4F8EF7',
+                  marginVertical: 5,
+                }}
+                onChangeText={text => setCustomerName(text)}
+                value={customerName}
+                placeholder="Customer's name"
+                placeholderTextColor="#A9A9A9"
+              />
             </View>
 
             <ScrollView
               horizontal
               keyboardShouldPersistTaps="handled"
               showsHorizontalScrollIndicator={false}>
-              {getCustomerHistory.map(p => (
+              {customerInfoFetch.map(p => (
                 <TouchableOpacity
                   onPress={() => {
-                    setCustomerPhone(p.user.user_phone);
+                    setCustomerPhone(p.user_phone);
 
-                    setCustomerName(p.user.user_name);
+                    setCustomerName(p.user_name);
                   }}
                   style={styles.suggestionItem}>
-                  <Text>{p.user.user_phone}</Text>
+                  <Text>{p.user_phone}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -710,35 +709,34 @@ const InvoiceScreen = ({onBack}) => {
               marginBottom: 10,
               marginTop: 10,
               alignItems: 'center',
+              justifyContent: 'flex-end',
             }}>
-            <Text style={{color: 'black'}}>Discount : </Text>
+            <Text
+              style={{
+                color: 'black',
+                flex: 3,
+                textAlign: 'right',
+                fontSize: 16,
+              }}>
+              Discount :{' '}
+            </Text>
             <TextInput
               style={{
                 borderWidth: 1,
                 borderColor: '#4F8EF7',
-                marginRight: 10,
+                // marginRight: 50,
+                // marginLeft: 200,
                 padding: 10,
                 flex: 1,
                 borderRadius: 5,
                 color: 'red',
+                textAlign: 'right',
               }}
               onChangeText={text => setDiscount(text)}
               value={discount}
               placeholder="Discount"
               keyboardType="numeric"
             />
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: 'bold',
-                color: 'red',
-                marginLeft: 20,
-              }}>
-              -{' '}
-              {(calculateSubtotal().toFixed(2) - finalTotal.toFixed(2)).toFixed(
-                2,
-              )}
-            </Text>
           </View>
           <View
             style={{
@@ -759,15 +757,11 @@ const InvoiceScreen = ({onBack}) => {
             <Text style={styles.finalTotalLabel}>Final Total: </Text>
             <Text style={styles.finalTotal}>{finalTotal.toFixed(2)}</Text>
           </View>
-          <Text
-            style={{
-              color: '#4F8EF7',
-              fontWeight: 'bold',
-              fontSize: 18,
-              marginBottom: 10,
-            }}>
-            Previous Due {previousTotalDue} টাকা
-          </Text>
+          <View style={styles.finalTotalRow}>
+            <Text style={styles.finalTotalLabel}>Previous Due: </Text>
+            <Text style={styles.finalTotal}>{previousTotalDue}</Text>
+          </View>
+
           <View
             style={{
               flexDirection: 'row',

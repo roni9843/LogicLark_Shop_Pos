@@ -43,7 +43,7 @@ const DueLayout = ({onBack}) => {
   const callFetch = async () => {
     try {
       const response = await fetch(
-        'https://logic-lark-shop-pos-backend.vercel.app/findAllPhoneWithDue',
+        'http://192.168.31.228:8000/findAllPhoneWithDue',
         {
           method: 'POST',
           headers: {

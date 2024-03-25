@@ -18,21 +18,15 @@ const DueHistoryScreen = ({
 
   const filteredUserInfo = allUserInfo.filter(item => {
     return (
-      item.user.user_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.user.user_phone.includes(searchQuery)
+      item.user_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.user_phone.includes(searchQuery)
     );
   });
   const renderItem = ({item}) => {
-    // Calculate total due for the user
-    let totalDue = 0;
-    item.dues.forEach(due => {
-      totalDue += due.due;
-    });
-
     return (
       <TouchableOpacity
         onPress={() => {
-          setIndividualUserDue(item);
+          setIndividualUserDue(item._id);
           setPageState('details');
         }}
         style={{
@@ -50,15 +44,15 @@ const DueHistoryScreen = ({
         }}>
         <View style={{flex: 1}}>
           <Text style={{color: '#37474F', fontWeight: 'bold'}}>
-            {item.user.user_name}
+            {item.user_name}
           </Text>
           <Text style={{color: '#546E7A', marginBottom: 5}}>
-            {item.user.user_phone}
+            {item.user_phone}
           </Text>
         </View>
         <View style={{alignItems: 'flex-end'}}>
           <Text style={{color: '#F44336', fontWeight: 'bold', fontSize: 18}}>
-            Total Due: ৳ {totalDue}
+            Total Due: ৳ {item.due_amount}
           </Text>
         </View>
       </TouchableOpacity>
