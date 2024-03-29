@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
 import {API_URL} from '../api_link';
 
 const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
@@ -87,9 +88,12 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
     setBtnDisable(true);
 
     try {
+      const timestamp = Date.now(); // Get current timestamp in milliseconds
+      const id = timestamp.toString(16);
+
       // Object to send to the backend
       const dataToSend = {
-        receive_id: '60f743c292f63b50f01afab1',
+        receive_id: id,
         userId: individualUserDue,
         date: new Date(),
         received_amount: parseInt(userAmount),
@@ -211,6 +215,262 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
   const handleButtonPress = () => {
     // Implement the logic for the button press here
     console.log('Button pressed!');
+  };
+
+  const printDue = async ({due}) => {
+    // Convert the date string to a Date object
+    const date = new Date(due.date);
+
+    // Format the date
+    const formattedDate = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+    try {
+      // Print the information
+      await BluetoothEscposPrinter.printerAlign(
+        BluetoothEscposPrinter.ALIGN.CENTER,
+      );
+      await BluetoothEscposPrinter.setBlob(1);
+      await BluetoothEscposPrinter.printText("Hasan's Store\n\r", {
+        encoding: 'GBK',
+        codepage: 0,
+        widthtimes: 0,
+        heigthtimes: 0,
+        fonttype: 0,
+      });
+      await BluetoothEscposPrinter.setBlob(0);
+      await BluetoothEscposPrinter.printText(
+        'New Sonakanda, BussStand\n\r',
+        {},
+      );
+      await BluetoothEscposPrinter.printText(
+        'Ruhitpur, Keranigonj, Dhaka\n\r',
+        {
+          encoding: 'GBK',
+          codepage: 0,
+          widthtimes: 0,
+          heigthtimes: 0,
+          fonttype: 0,
+        },
+      );
+      await BluetoothEscposPrinter.printText('01813048283\n\r', {
+        encoding: 'GBK',
+        codepage: 0,
+        widthtimes: 0,
+        heigthtimes: 0,
+        fonttype: 0,
+      });
+      await BluetoothEscposPrinter.printText('\n\r', {});
+      await BluetoothEscposPrinter.printerAlign(
+        BluetoothEscposPrinter.ALIGN.LEFT,
+      );
+      await BluetoothEscposPrinter.printText(`Date: ${formattedDate}\n\r`, {});
+      await BluetoothEscposPrinter.printText(
+        `Due Receive No: ${due.receive_id}\n\r`,
+        {},
+      );
+      await BluetoothEscposPrinter.printText(
+        `Customer: ${due.customerName}\n\r`,
+        {},
+      );
+      await BluetoothEscposPrinter.printText(
+        `Mobile: ${due.customerPhone}\n\r`,
+        {},
+      );
+      await BluetoothEscposPrinter.printText(
+        '--------------------------------\n\r',
+        {},
+      );
+      await BluetoothEscposPrinter.printColumn(
+        [16, 16],
+        [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+        ['Received Amount', `${due.received_amount.toFixed(2)}`],
+        {},
+      );
+      await BluetoothEscposPrinter.printColumn(
+        [16, 16],
+        [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+        ['Due History', `-${due.due_history === null ? 0 : due.due_history}`],
+        {},
+      );
+      await BluetoothEscposPrinter.printColumn(
+        [16, 16],
+        [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+        [
+          'Previous Due',
+          `-${due.previous_due === null ? 0 : due.previous_due}`,
+        ],
+        {},
+      );
+      await BluetoothEscposPrinter.printText(
+        'Thank you for shopping with us!\r\n',
+        {},
+      );
+      await BluetoothEscposPrinter.printText('Powered By:\r\n', {});
+      await BluetoothEscposPrinter.printText('LogicLark. 01927574610\r\n', {});
+      await BluetoothEscposPrinter.printText('\n\r', {});
+      await BluetoothEscposPrinter.printText('\n\r', {});
+    } catch (error) {
+      console.error('Error printing due:', error);
+    }
+  };
+
+  const printInvoice = async ({due}) => {
+    // Fixing date formatting issue
+    const date = new Date(due.buyDate);
+    const formattedDate = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+    const printItemDetails = async () => {
+      // Iterate over due.details instead of due.products
+      for (const dt of due.details) {
+        await BluetoothEscposPrinter.printColumn(
+          columnWidths,
+          [
+            BluetoothEscposPrinter.ALIGN.LEFT,
+            BluetoothEscposPrinter.ALIGN.CENTER,
+            BluetoothEscposPrinter.ALIGN.CENTER,
+            BluetoothEscposPrinter.ALIGN.RIGHT,
+          ],
+          [
+            `${dt.name}`,
+            `${dt.qty}`,
+            `${parseInt(dt.price).toFixed(2)}`,
+            `${parseInt(dt.total).toFixed(2)}`,
+          ],
+          {},
+        );
+      }
+    };
+
+    // ? ===== start ============
+    await BluetoothEscposPrinter.printerAlign(
+      BluetoothEscposPrinter.ALIGN.CENTER,
+    );
+    await BluetoothEscposPrinter.setBlob(1);
+    await BluetoothEscposPrinter.printText("Hasan's Store\n\r", {
+      encoding: 'GBK',
+      codepage: 0,
+      widthtimes: 0,
+      heigthtimes: 0,
+      fonttype: 0,
+    });
+    await BluetoothEscposPrinter.setBlob(0);
+    await BluetoothEscposPrinter.printText('New Sonakanda, BussStand\n\r', {});
+    await BluetoothEscposPrinter.printText('Ruhitpur, Keranigonj, Dhaka\n\r', {
+      encoding: 'GBK',
+      codepage: 0,
+      widthtimes: 0,
+      heigthtimes: 0,
+      fonttype: 0,
+    });
+    await BluetoothEscposPrinter.printText('01813048283\n\r', {
+      encoding: 'GBK',
+      codepage: 0,
+      widthtimes: 0,
+      heigthtimes: 0,
+      fonttype: 0,
+    });
+    await BluetoothEscposPrinter.printText('\n\r', {});
+    await BluetoothEscposPrinter.printerAlign(
+      BluetoothEscposPrinter.ALIGN.LEFT,
+    );
+
+    await BluetoothEscposPrinter.printText(`Date: ${formattedDate}\n\r`, {});
+    await BluetoothEscposPrinter.printText(`Invoice No: ${due.inId}\n\r`, {});
+    await BluetoothEscposPrinter.printText(
+      `Customer: ${due.customerName}\n\r`,
+      {},
+    );
+    await BluetoothEscposPrinter.printText(
+      `Mobile: ${due.customerPhone}\n\r`,
+      {},
+    );
+
+    // await BluetoothEscposPrinter.printText('Salesperson: 18664896621\n\r', {});
+    await BluetoothEscposPrinter.printText(
+      '--------------------------------\n\r',
+      {},
+    );
+    let columnWidths = [12, 6, 6, 8];
+    await BluetoothEscposPrinter.printColumn(
+      columnWidths,
+      [
+        BluetoothEscposPrinter.ALIGN.LEFT,
+        BluetoothEscposPrinter.ALIGN.CENTER,
+        BluetoothEscposPrinter.ALIGN.CENTER,
+        BluetoothEscposPrinter.ALIGN.RIGHT,
+      ],
+      ['Product', 'Qty', 'U P', 'Amount'],
+      {},
+    );
+    await BluetoothEscposPrinter.printText(
+      '--------------------------------\n\r',
+      {},
+    );
+
+    await printItemDetails();
+
+    await BluetoothEscposPrinter.printText(
+      '--------------------------------\n\r',
+      {},
+    );
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Subtotal', `${due.subTotal.toFixed(2)}`],
+      {},
+    );
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Discount', `-${due.discount === null ? 0 : due.discount}`],
+      {},
+    );
+
+    await BluetoothEscposPrinter.printText(
+      '--------------------------------\n\r',
+      {},
+    );
+
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Grand Total', `${due.total.toFixed(2)}`],
+      {},
+    );
+    await BluetoothEscposPrinter.printText('\n\r', {});
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Paid Amount', `${due.receivedAmount.toFixed(2)}`],
+      {},
+    );
+    await BluetoothEscposPrinter.printText('\n\r', {});
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Due Amount', `${due.due.toFixed(2)}`],
+      {},
+    );
+    await BluetoothEscposPrinter.printColumn(
+      [16, 16],
+      [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+      ['Previous Due', `${due.due_history.toFixed(2)}`],
+      {},
+    );
+
+    await BluetoothEscposPrinter.printText('\n\r', {});
+
+    await BluetoothEscposPrinter.printerAlign(
+      BluetoothEscposPrinter.ALIGN.CENTER,
+    );
+    await BluetoothEscposPrinter.printText(
+      'Thank you for shopping with us!\r\n',
+      {},
+    );
+    await BluetoothEscposPrinter.printText('Powered By:\r\n', {});
+    await BluetoothEscposPrinter.printText('LogicLark. 01927574610\r\n', {});
+    await BluetoothEscposPrinter.printText('\n\r', {});
+    await BluetoothEscposPrinter.printText('\n\r', {});
   };
 
   return (
@@ -376,11 +636,10 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                     fontSize: 22,
                     fontWeight: 'bold',
                     color: '#000',
-                    textDecorationLine: 'underline',
                   }}>
-                  Due Received: {due.due_history} ({due.previous_due})
+                  Due Received
                 </Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => printDue(due)}>
                   <Text
                     style={{fontSize: 22, fontWeight: 'bold', color: '#000'}}>
                     🖨️
@@ -400,13 +659,26 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                 </View>
                 <View style={{marginBottom: 5}}>
                   <Text style={{color: '#000'}}>
-                    <Text style={{fontWeight: 'bold'}}>Received Amount:</Text>{' '}
+                    <Text style={{fontWeight: 'bold'}}>Received Amount:</Text> ৳{' '}
                     {due.received_amount}
                   </Text>
                 </View>
                 <View style={{marginBottom: 5}}>
                   <Text style={{color: '#000'}}>
-                    <Text style={{fontWeight: 'bold'}}>Date:</Text> {due.date}
+                    <Text style={{fontWeight: 'bold'}}>Due History:</Text> ৳{' '}
+                    {due.due_history}
+                  </Text>
+                </View>
+                <View style={{marginBottom: 5}}>
+                  <Text style={{color: '#000'}}>
+                    <Text style={{fontWeight: 'bold'}}>Previous Due:</Text> ৳{' '}
+                    {due.previous_due}
+                  </Text>
+                </View>
+                <View style={{marginBottom: 5}}>
+                  <Text style={{color: '#000'}}>
+                    <Text style={{fontWeight: 'bold'}}>Date:</Text>{' '}
+                    {formatDate(due.date)}
                   </Text>
                 </View>
               </View>
@@ -434,11 +706,24 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
               <View
                 style={{
                   flexDirection: 'row',
-                  justifyContent: 'flex-end',
+                  justifyContent: 'space-between',
                   alignItems: 'flex-end',
                   marginBottom: 5,
+                  //  paddingHorizontal: 10, // Added padding for better spacing
                 }}>
-                <TouchableOpacity>
+                <Text
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 'bold',
+                    color: '#4F8EF7',
+                  }}>
+                  Invoice Id:
+                </Text>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    printInvoice(due);
+                  }}>
                   <Text
                     style={{
                       fontSize: 22,
@@ -450,6 +735,15 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                   </Text>
                 </TouchableOpacity>
               </View>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  color: 'grey',
+                  marginBottom: 10,
+                }}>
+                {due.inId}
+              </Text>
 
               <View
                 style={{

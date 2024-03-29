@@ -70,9 +70,12 @@ const InvoiceScreen = ({onBack}) => {
   const [customerName, setCustomerName] = useState('');
   // const [customerDetails, setCustomerDetails] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [prevCustomerPhone, setPrevCustomerPhone] = useState('');
 
   // ? The customer history
   const [customerInfoFetch, setCustomerInfoFetch] = useState([]);
+
+  const [invoiceNumber, setInvoiceNumber] = useState({});
 
   // ? previous total due
   const [previousTotalDue, setPreviousTotalDue] = useState(0);
@@ -100,7 +103,7 @@ const InvoiceScreen = ({onBack}) => {
   }, [customerPhone]);
 
   useEffect(() => {
-    if (customerPhone.length > 4) {
+    if (customerPhone.length > 4 && customerPhone !== prevCustomerPhone) {
       const fetchData = async () => {
         try {
           const response = await fetch(`${API_URL}/findBy1stNumber`, {
@@ -115,9 +118,20 @@ const InvoiceScreen = ({onBack}) => {
 
           if (response.ok) {
             const data = await response.json();
-            // Handle the data received from the API
+
             console.log('Data from API:', data);
-            setCustomerInfoFetch(data);
+
+            // Set users in state
+            setCustomerInfoFetch(data.users);
+
+            console.log('Data from user:', data.users);
+            console.log('Data from invoice :', data.inVoice.newInvoiceNumber);
+
+            // Set newInvoiceNumber in state
+            setInvoiceNumber(data.inVoice.newInvoiceNumber);
+
+            // Set previous phone number
+            setPrevCustomerPhone(customerPhone);
           } else {
             console.error('Failed to fetch data:', response.status);
           }
@@ -128,7 +142,7 @@ const InvoiceScreen = ({onBack}) => {
 
       fetchData();
     }
-  }, [customerPhone]);
+  }, [customerPhone, prevCustomerPhone]);
 
   const updateFinalTotal = () => {
     const subtotal = calculateSubtotal();
@@ -190,14 +204,14 @@ const InvoiceScreen = ({onBack}) => {
     const detailsConsole = {
       products: constFilterProduct,
       subtotal: calculateSubtotal().toFixed(2),
-      discount: discount,
+      discount: discount.toFixed(2),
       finalTotal: finalTotal.toFixed(2),
       customerName: customerName,
       // customerDetails: customerDetails,
       customerPhone: customerPhone,
-      finalTotal: finalTotal,
-      receivedAmount: receivedAmount,
-      due: finalTotal - receivedAmount,
+      finalTotal: finalTotal.toFixed(2),
+      receivedAmount: receivedAmount.toFixed(2),
+      due: (finalTotal - receivedAmount).toFixed(2),
     };
 
     const newData = detailsConsole.products.map(item => ({
@@ -332,7 +346,7 @@ const InvoiceScreen = ({onBack}) => {
       const fetchData = {
         user_name: invoiceDetails.customerName,
         user_phone: `${invoiceDetails.customerPhone}`,
-        inId: '609db63b0b24c939cc41a898',
+        inId: invoiceNumber,
         details: invoiceDetails.products,
         subTotal: parseInt(invoiceDetails.subtotal),
         discount: parseInt(invoiceDetails.discount),
@@ -535,9 +549,13 @@ const InvoiceScreen = ({onBack}) => {
                   color: '#4F8EF7',
                   marginVertical: 5,
                 }}
-                onChangeText={text => setCustomerPhone(text)}
+                onChangeText={text => {
+                  // Regular expression to allow only numbers
+                  let newText = text.replace(/[^0-9]/g, '');
+                  setCustomerPhone(newText);
+                }}
                 value={customerPhone}
-                keyboardType="numeric"
+                keyboardType="decimal-pad" // Update keyboardType to "decimal-pad"
                 placeholder="Customer's phone"
                 placeholderTextColor="#A9A9A9"
               />
@@ -556,6 +574,7 @@ const InvoiceScreen = ({onBack}) => {
                 value={customerName}
                 placeholder="Customer's name"
                 placeholderTextColor="#A9A9A9"
+                keyboardType="default" // Remove keyboardType="numeric"
               />
             </View>
 
@@ -648,7 +667,19 @@ const InvoiceScreen = ({onBack}) => {
                     color: '#4F8EF7',
                     textAlign: 'right',
                   }}
-                  onChangeText={text => handleChangeText(text, index, 'price')}
+                  onChangeText={text => {
+                    // Regular expression to allow only numbers and a single decimal point
+                    let newText = text.replace(/[^0-9.]/g, ''); // Allow only numbers and a single decimal point
+                    let decimalCount = newText.split('.').length - 1;
+
+                    // Check if there is more than one decimal point
+                    if (decimalCount > 1) {
+                      newText = newText.substring(0, newText.lastIndexOf('.'));
+                    }
+
+                    // Update the state
+                    handleChangeText(newText, index, 'price');
+                  }}
                   value={product.price}
                   placeholder="Price"
                   keyboardType="numeric"
@@ -665,7 +696,19 @@ const InvoiceScreen = ({onBack}) => {
                     color: '#4F8EF7',
                     textAlign: 'right',
                   }}
-                  onChangeText={text => handleChangeText(text, index, 'qty')}
+                  onChangeText={text => {
+                    // Regular expression to allow only numbers and a single decimal point
+                    let newText = text.replace(/[^0-9.]/g, ''); // Allow only numbers and a single decimal point
+                    let decimalCount = newText.split('.').length - 1;
+
+                    // Check if there is more than one decimal point
+                    if (decimalCount > 1) {
+                      newText = newText.substring(0, newText.lastIndexOf('.'));
+                    }
+
+                    // Update the state
+                    handleChangeText(newText, index, 'qty');
+                  }}
                   value={product.qty}
                   placeholder="Quantity"
                   keyboardType="numeric"
@@ -727,7 +770,17 @@ const InvoiceScreen = ({onBack}) => {
                 color: 'red',
                 textAlign: 'right',
               }}
-              onChangeText={text => setDiscount(text)}
+              onChangeText={text => {
+                // Remove any non-digit and non-decimal point characters
+                let cleanedText = text.replace(/[^\d.]/g, '');
+
+                // Ensure the number is less than or equal to finalTotal
+                if (parseFloat(cleanedText) > calculateSubtotal().toFixed(2)) {
+                  cleanedText = calculateSubtotal().toFixed(2); // Limit to finalTotal
+                }
+
+                setDiscount(cleanedText);
+              }}
               value={discount}
               placeholder="Discount"
               keyboardType="numeric"
@@ -754,7 +807,7 @@ const InvoiceScreen = ({onBack}) => {
           </View>
           <View style={styles.finalTotalRow}>
             <Text style={styles.finalTotalLabel}>Previous Due: </Text>
-            <Text style={styles.finalTotal}>{previousTotalDue}</Text>
+            <Text style={styles.finalTotal}>{previousTotalDue.toFixed(2)}</Text>
           </View>
 
           <View
@@ -775,7 +828,17 @@ const InvoiceScreen = ({onBack}) => {
                 borderRadius: 5,
                 color: 'black',
               }}
-              onChangeText={text => setReceivedAmount(text)}
+              onChangeText={text => {
+                // Remove any non-digit and non-decimal point characters
+                let cleanedText = text.replace(/[^\d.]/g, '');
+
+                // Ensure the number is less than or equal to finalTotal
+                if (parseFloat(cleanedText) > finalTotal) {
+                  cleanedText = finalTotal.toFixed(2); // Limit to finalTotal
+                }
+
+                setReceivedAmount(cleanedText);
+              }}
               value={receivedAmount}
               placeholder="Receive"
               keyboardType="numeric"

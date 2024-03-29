@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TextInput,
   ToastAndroid,
   TouchableOpacity,
   View,
@@ -18,11 +19,99 @@ import DueLayout from './DueHistory/DueLayout';
 import InvoiceScreen from './InvoiceScreen';
 import PrinterScreen from './PrinterScreen';
 import {getBluetoothData} from './services/BluetoothService';
+import {getUserData, saveUserData} from './services/SetUserActivate';
 
 const App = () => {
   const [showPrinterScreen, setShowPrinterScreen] = useState(false);
   const [showInvoiceScreen, setShowInvoiceScreen] = useState(false);
   const [showDueHistoryScreen, setShowDueHistoryScreen] = useState(false);
+
+  // ** user activator
+  const [userID, setUserID] = useState('');
+  const [userActivatorData, setUserActivatorData] = useState(null);
+  const [isUserActive, setUserActive] = useState(false);
+
+  useEffect(() => {
+    fetchDataLocalStorage();
+  }, []);
+
+  const fetchDataLocalStorage = async () => {
+    const userData = await getUserData();
+
+    setUserActivatorData(userData);
+    console.log('local host geeeeet ', userData);
+
+    if (userData) {
+      // Provided time
+      var providedTime = new Date(userData.userTimeLimit);
+
+      // Current time
+      var currentTime = new Date();
+
+      // Compare
+      if (providedTime < currentTime) {
+        handleButtonPress(userData.userID);
+        setUserActive(false);
+      } else {
+        setUserActive(true);
+      }
+    } else {
+      setUserActive(false);
+    }
+  };
+
+  const handleButtonPress = async userID => {
+    console.log('call', userID);
+
+    try {
+      const response = await fetch(
+        'http://192.168.0.108:7000/findUserTimeLimit',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            //   userId: userID,
+            userId: `${userID}`,
+          }),
+        },
+      );
+
+      // if (!response.ok) {
+      //   throw new Error('Network response was not ok');
+      // }
+
+      const data = await response.json();
+
+      if (data.status === true) {
+        // Provided time
+        var providedTime = new Date(data.user.timeLimit);
+
+        // Current time
+        var currentTime = new Date();
+
+        // Compare
+        if (providedTime < currentTime) {
+          setUserActive(false);
+          // Save data using saveUserData function
+          await saveUserData(data.user._id, data.user.timeLimit);
+        } else {
+          setUserActive(true);
+          // Save data using saveUserData function
+          await saveUserData(data.user._id, data.user.timeLimit);
+
+          setUserActivatorData(data);
+        }
+      } else {
+        setUserActive(false);
+      }
+
+      console.log('Data fetched and saved successfully:', data);
+    } catch (error) {
+      console.error('Error fetching or saving data:', error);
+    }
+  };
 
   const handleInvoiceButtonPress = () => {
     setShowInvoiceScreen(true);
@@ -327,7 +416,6 @@ const App = () => {
             <Text style={styles.balanceTitle}>Hasan's Store</Text>
             <Text style={styles.textLabel}>User</Text>
           </View>
-
           <View style={styles.balanceContainer}>
             <Text style={styles.balanceAmount}>{dateTime}</Text>
             <Text style={styles.availableBalance}>
@@ -335,20 +423,21 @@ const App = () => {
             </Text>
             <Text style={styles.availableBalance}>Keraniganj, Dhaka</Text>
           </View>
-
           <View style={styles.menu}>
-            <TouchableOpacity
-              style={
-                boundAddress.length < 1
-                  ? styles.menuItemInvoiceDisActive
-                  : styles.menuItemInvoiceActive
-              }
-              // disabled={boundAddress.length < 1 ? true : false}
-              onPress={handleInvoiceButtonPress}>
-              <Text style={styles.menuItemInvoiceActiveTextLabel}>
-                InVoice 🖨️
-              </Text>
-            </TouchableOpacity>
+            {isUserActive !== false && (
+              <TouchableOpacity
+                style={
+                  boundAddress.length < 1
+                    ? styles.menuItemInvoiceDisActive
+                    : styles.menuItemInvoiceActive
+                }
+                disabled={boundAddress.length < 1 ? true : false}
+                onPress={handleInvoiceButtonPress}>
+                <Text style={styles.menuItemInvoiceActiveTextLabel}>
+                  InVoice 🖨️
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               onPress={handelDueHistoryButton}
@@ -357,18 +446,92 @@ const App = () => {
                 Due History 📃
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleBluetoothButtonPress}
-              style={
-                boundAddress.length < 1
-                  ? styles.menuItemBluetoothDisActive
-                  : styles.menuItemBluetoothActive
-              }>
-              <Text style={styles.menuItemInBluetoothActiveTextLabel}>
-                Bluetooth ➕
-              </Text>
-            </TouchableOpacity>
+
+            {isUserActive !== false && (
+              <TouchableOpacity
+                onPress={handleBluetoothButtonPress}
+                style={
+                  boundAddress.length < 1
+                    ? styles.menuItemBluetoothDisActive
+                    : styles.menuItemBluetoothActive
+                }>
+                <Text style={styles.menuItemInBluetoothActiveTextLabel}>
+                  Bluetooth ➕
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
+
+          {userActivatorData === null && (
+            <View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  backgroundColor: '#f0f0f0',
+                  marginTop: 50,
+                  justifyContent: 'center',
+                  alignContent: 'center',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    alignContent: 'center',
+                    alignItems: 'center',
+                    alignSelf: 'center',
+                  }}>
+                  <TextInput
+                    style={{
+                      height: 40,
+                      width: 200,
+                      borderColor: 'red',
+                      borderWidth: 2,
+                      paddingHorizontal: 10,
+                      //   marginBottom: 20,
+                      borderRadius: 8,
+                      backgroundColor: '#fff',
+                      color: 'black',
+                    }}
+                    placeholder="Enter Code"
+                    placeholderTextColor="#999"
+                    onChangeText={text => setUserID(text)}
+                    value={userID}
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      userID && handleButtonPress(userID);
+                    }}
+                    style={{
+                      backgroundColor: 'red',
+                      borderRadius: 5,
+                      marginLeft: 10,
+                      paddingHorizontal: 20,
+                      paddingVertical: 10,
+                    }}>
+                    <Text style={{color: '#fff', fontWeight: 'bold'}}>
+                      Activate
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {isUserActive === false && (
+            <Text
+              style={{
+                backgroundColor: 'red',
+                fontWeight: 'bold',
+                fontSize: 25,
+                textAlign: 'center',
+                marginTop: 20,
+              }}>
+              Your account is not active. Please Contact On 01927574610
+            </Text>
+          )}
 
           {boundAddress.length > 0 && (
             <TouchableOpacity style={styles.upgrade}>
@@ -378,6 +541,7 @@ const App = () => {
           )}
         </View>
       )}
+
       {/* Conditionally render the screens */}
       {showPrinterScreen && (
         <PrinterScreen
