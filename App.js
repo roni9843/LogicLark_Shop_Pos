@@ -65,7 +65,7 @@ const App = () => {
 
     try {
       const response = await fetch(
-        'http://192.168.0.108:7000/findUserTimeLimit',
+        'https://logic-lark-shop-pos-security.vercel.app/findUserTimeLimit',
         {
           method: 'POST',
           headers: {
