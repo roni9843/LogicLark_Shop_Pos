@@ -1,19 +1,19 @@
 import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
+import {activeBtnColor} from '../ColorSchema';
 
 const PrintInvoicePrinter = ({finalPrint}) => {
-  const nameDD = ['name', 'low', 'height'];
-
   return (
     <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
       <TouchableOpacity
         style={{
           padding: 15,
           marginVertical: 10,
-          backgroundColor: '#1ACAF7',
+          backgroundColor: activeBtnColor,
           justifyContent: 'flex-end',
           borderRadius: 10,
           marginBottom: 50,
+          paddingHorizontal: 30,
         }}
         //   onPress={() => pSaveAndPrint()}
 

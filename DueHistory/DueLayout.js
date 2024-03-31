@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {BackHandler, StyleSheet, Text, View} from 'react-native';
+import {defaultGray} from '../ColorSchema';
 import {API_URL} from '../api_link';
+import {userGlobalName} from '../userGlobalInfo';
 import DueHistoryDetails from './DueHistoryDetails';
 import DueHistoryScreen from './DueHistoryScreen';
 
@@ -93,7 +95,7 @@ const DueLayout = ({onBack}) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.textLabel}>Bell</Text>
-        <Text style={styles.balanceTitle}>Hasan's Store</Text>
+        <Text style={styles.balanceTitle}>{userGlobalName}</Text>
         <Text style={styles.textLabel}>User</Text>
       </View>
 
@@ -120,7 +122,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingBottom: 0,
     paddingHorizontal: 5,
-    backgroundColor: '#F5F5F5', // Light gray background
+    // backgroundColor: '#F5F5F5', // Light gray background
+    backgroundColor: '#Fff', // Light gray background
     //marginBottom: 70,
   },
 
@@ -136,7 +139,7 @@ const styles = StyleSheet.create({
   },
   balanceTitle: {
     fontSize: 24,
-    color: '#4F8EF7',
+    color: defaultGray,
     fontWeight: 'bold',
   },
   balanceContainer: {

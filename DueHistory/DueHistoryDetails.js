@@ -9,6 +9,12 @@ import {
   View,
 } from 'react-native';
 import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
+import {
+  activeBtnColor,
+  defaultGray,
+  dueColor,
+  errorColor,
+} from '../ColorSchema';
 import {API_URL} from '../api_link';
 
 const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
@@ -485,20 +491,20 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
     <ScrollView
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
-        backgroundColor: '#F0F2F5',
+        backgroundColor: '#fff',
         paddingHorizontal: 20,
         paddingBottom: 20,
       }}>
       <View
         style={{
-          backgroundColor: '#FFF9E7', // Light golden background
+          backgroundColor: defaultGray, // Light golden background
           borderRadius: 10,
           marginBottom: 15,
-          shadowColor: '#FFD600', // Golden shadow
-          shadowOffset: {width: 0, height: 2},
-          shadowOpacity: 0.5, // Increased shadow opacity
-          shadowRadius: 5, // Increased shadow radius
-          elevation: 5,
+          // shadowColor: '#FFD600', // Golden shadow
+          // shadowOffset: {width: 0, height: 2},
+          // shadowOpacity: 0.5, // Increased shadow opacity
+          // shadowRadius: 5, // Increased shadow radius
+          //  elevation: 5,
           padding: 15,
         }}>
         <Text
@@ -506,7 +512,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
             fontSize: 22,
             fontWeight: 'bold',
             marginBottom: 10,
-            color: '#4F8EF7',
+            color: '#ffff',
           }}>
           User Details
         </Text>
@@ -517,10 +523,10 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
             alignItems: 'center',
             marginBottom: 10,
           }}>
-          <Text style={{flex: 1, fontWeight: 'bold', color: '#555'}}>
+          <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
             Name:
           </Text>
-          <Text style={{flex: 2, color: '#333', fontWeight: 'bold'}}>
+          <Text style={{flex: 2, color: '#ffff', fontWeight: 'bold'}}>
             {userInfo?.user?.user_name ? userInfo?.user?.user_name : 'N/A'}
           </Text>
         </View>
@@ -531,10 +537,10 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
             alignItems: 'center',
             marginBottom: 10,
           }}>
-          <Text style={{flex: 1, fontWeight: 'bold', color: '#555'}}>
+          <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
             Phone Number:
           </Text>
-          <Text style={{flex: 2, color: '#333', fontWeight: 'bold'}}>
+          <Text style={{flex: 2, color: '#ffff', fontWeight: 'bold'}}>
             {userInfo?.user?.user_phone ? userInfo?.user?.user_phone : 'N/A'}
           </Text>
         </View>
@@ -545,10 +551,10 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
             alignItems: 'center',
             marginBottom: 10,
           }}>
-          <Text style={{flex: 1, fontWeight: 'bold', color: '#555'}}>
+          <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
             Total Due:
           </Text>
-          <Text style={{flex: 2, color: '#333'}}>
+          <Text style={{flex: 2, color: '#ffff'}}>
             {userInfo?.user?.due_amount ? userInfo?.user?.due_amount : 'N/A'}{' '}
             {userAmount && '-'} {userAmount} {userAmount && '='}{' '}
             {userAmount && userInfo?.user?.due_amount - userAmount}
@@ -561,7 +567,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
             alignItems: 'center',
             marginBottom: 10,
           }}>
-          <Text style={{flex: 1, fontWeight: 'bold', color: '#555'}}>
+          <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
             Received:
           </Text>
           <TextInput
@@ -593,7 +599,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
         ) : (
           <TouchableOpacity
             style={{
-              backgroundColor: '#4F8EF7',
+              backgroundColor: activeBtnColor,
               paddingVertical: 10,
               borderRadius: 5,
               alignItems: 'center',
@@ -616,22 +622,33 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
         </View>
       )}
 
-      {userDueAndInvoiceHistory.map(dt => console.log('this is roni'))}
-
       {userDueAndInvoiceHistory &&
         userDueAndInvoiceHistory.map((due, index) =>
           due.receive_id ? (
             <View
               style={{
+                //  marginBottom: 20,
+                //  backgroundColor: '#C8E6C9', // Lighter green background
+                //  borderRadius: 10,
+                //  padding: 20,
+                //  shadowColor: '#000',
+                //  shadowOffset: {width: 0, height: 2},
+                //    shadowOpacity: 0.2,
+                //    shadowRadius: 2,
+                //  elevation: 3,
+                borderWidth: 2,
+                borderColor: activeBtnColor,
+                //   backgroundColor: 'white',
+
                 marginBottom: 20,
-                backgroundColor: '#C8E6C9', // Lighter green background
+                backgroundColor: '#FFF',
                 borderRadius: 10,
                 padding: 20,
-                shadowColor: '#000',
-                shadowOffset: {width: 0, height: 2},
-                shadowOpacity: 0.2,
-                shadowRadius: 2,
-                elevation: 3,
+                //  shadowColor: '#000',
+                //    shadowOffset: {width: 0, height: 2},
+                //    shadowOpacity: 0.2,
+                //   shadowRadius: 2,
+                //  elevation: 3,
               }}>
               <View
                 style={{
@@ -643,9 +660,9 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                   style={{
                     fontSize: 22,
                     fontWeight: 'bold',
-                    color: '#000',
+                    color: activeBtnColor,
                   }}>
-                  Due Received
+                  বকেয়া গ্রহন
                 </Text>
                 <TouchableOpacity onPress={() => printDue(due)}>
                   <Text
@@ -657,7 +674,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
               <View style={{marginTop: 10}}>
                 {/* Add spacing between sections */}
                 <Text style={{fontWeight: 'bold', color: '#000', fontSize: 16}}>
-                  Details:
+                  বিস্তারিত:
                 </Text>
                 <View style={{marginBottom: 5}}>
                   <Text style={{color: '#000'}}>
@@ -665,24 +682,28 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                     {due.receive_id}
                   </Text>
                 </View>
+
                 <View style={{marginBottom: 5}}>
-                  <Text style={{color: '#000'}}>
-                    <Text style={{fontWeight: 'bold'}}>Received Amount:</Text> ৳{' '}
-                    {due.received_amount}
-                  </Text>
-                </View>
-                <View style={{marginBottom: 5}}>
-                  <Text style={{color: '#000'}}>
-                    <Text style={{fontWeight: 'bold'}}>Due History:</Text> ৳{' '}
+                  <Text style={{color: dueColor}}>
+                    <Text style={{fontWeight: 'bold'}}>পূর্বের বকেয়া:</Text> ৳{' '}
                     {due.due_history}
                   </Text>
                 </View>
                 <View style={{marginBottom: 5}}>
-                  <Text style={{color: '#000'}}>
-                    <Text style={{fontWeight: 'bold'}}>Previous Due:</Text> ৳{' '}
+                  <Text style={{color: activeBtnColor}}>
+                    <Text style={{fontWeight: 'bold', color: activeBtnColor}}>
+                      Received Amount:
+                    </Text>{' '}
+                    ৳ {due.received_amount}
+                  </Text>
+                </View>
+                <View style={{marginBottom: 5}}>
+                  <Text style={{color: errorColor}}>
+                    <Text style={{fontWeight: 'bold'}}>বর্তমান বকেয়া:</Text> ৳{' '}
                     {due.previous_due}
                   </Text>
                 </View>
+
                 <View style={{marginBottom: 5}}>
                   <Text style={{color: '#000'}}>
                     <Text style={{fontWeight: 'bold'}}>Date:</Text>{' '}
@@ -699,7 +720,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                 backgroundColor: '#FFF',
                 borderRadius: 10,
                 padding: 20,
-                shadowColor: '#000',
+                shadowColor: defaultGray,
                 shadowOffset: {width: 0, height: 2},
                 shadowOpacity: 0.2,
                 shadowRadius: 2,
@@ -723,7 +744,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                   style={{
                     fontSize: 22,
                     fontWeight: 'bold',
-                    color: '#4F8EF7',
+                    color: defaultGray,
                   }}>
                   Invoice Id:
                 </Text>
@@ -761,7 +782,11 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                   marginBottom: 5,
                 }}>
                 <Text
-                  style={{fontSize: 22, fontWeight: 'bold', color: '#4F8EF7'}}>
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 'bold',
+                    color: defaultGray,
+                  }}>
                   Items
                 </Text>
                 <Text style={{color: 'gray', fontSize: 14, textAlign: 'right'}}>
@@ -771,33 +796,33 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
               {/* Iterate over dues */}
               <View
                 style={{
-                  backgroundColor: '#F0F2F5',
+                  backgroundColor: defaultGray,
                   padding: 10,
                   borderRadius: 5,
                   marginBottom: 10,
-                  shadowColor: '#000',
-                  shadowOffset: {width: 0, height: 2},
-                  shadowOpacity: 0.1,
-                  shadowRadius: 1,
-                  elevation: 1,
+                  //   shadowColor: '#000',
+                  //  shadowOffset: {width: 0, height: 2},
+                  //  shadowOpacity: 0.1,
+                  //  shadowRadius: 1,
+                  //  elevation: 1,
                   flexDirection: 'row', // Align items horizontally
                   alignItems: 'center', // Center items vertically
                   justifyContent: 'space-between', // Space between items
                   borderBottomWidth: 2,
                   borderBottomColor: '#ccc',
                 }}>
-                <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
+                <Text style={{color: '#fff', fontWeight: 'bold', flex: 1}}>
                   Name
                 </Text>
-                <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
+                <Text style={{color: '#fff', fontWeight: 'bold', flex: 1}}>
                   Price
                 </Text>
-                <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
+                <Text style={{color: '#fff', fontWeight: 'bold', flex: 1}}>
                   Qty
                 </Text>
                 <Text
                   style={{
-                    color: '#333',
+                    color: '#fff',
                     fontWeight: 'bold',
                     textAlign: 'right',
                     flex: 1,
@@ -825,13 +850,13 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                     justifyContent: 'space-between', // Space between items
                   }}>
                   <Text style={{color: '#333', fontWeight: 'bold', flex: 1}}>
-                    {detail.name ? detail.name : 'N/A'}
+                    {detail.name ? detail.name : '0'}
                   </Text>
                   <Text style={{color: '#333', flex: 1}}>
-                    {detail.price ? detail.price : 'N/A'}
+                    {detail.price.toFixed(2) ? detail.price : '0.00'}
                   </Text>
                   <Text style={{color: '#333', flex: 1}}>
-                    {detail.qty ? detail.qty : 'N/A'}
+                    {detail.qty.toFixed(2) ? detail.qty : '0.00'}
                   </Text>
                   <Text
                     style={{
@@ -840,7 +865,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                       textAlign: 'right',
                       flex: 1,
                     }}>
-                    {detail.total ? detail.total : 'N/A'}
+                    {detail.total.toFixed(2) ? detail.total : '0.00'}
                   </Text>
                 </View>
               ))}
@@ -908,7 +933,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                       marginBottom: 5,
                       textAlign: 'right',
                     }}>
-                    ৳{due.subTotal ? due.subTotal : 'N/A'}
+                    ৳{due.subTotal ? due.subTotal : '0.00'}
                   </Text>
                   <Text
                     style={{
@@ -917,7 +942,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                       marginBottom: 5,
                       textAlign: 'right',
                     }}>
-                    - ৳{due.discount ? due.discount : 'N/A'}
+                    - ৳{due.discount ? due.discount : '0.00'}
                   </Text>
                   <Text
                     style={{
@@ -926,7 +951,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                       marginBottom: 5,
                       textAlign: 'right',
                     }}>
-                    ৳{due.total ? due.total : 'N/A'}
+                    ৳{due.total ? due.total : '0.00'}
                   </Text>
                   <Text
                     style={{
@@ -935,7 +960,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                       marginBottom: 5,
                       textAlign: 'right',
                     }}>
-                    ৳{due.accountReceived ? due.accountReceived : 'N/A'}
+                    ৳{due.accountReceived ? due.accountReceived : '0.00'}
                   </Text>
                   <Text
                     style={{
@@ -944,7 +969,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                       marginBottom: 5,
                       textAlign: 'right',
                     }}>
-                    ৳{due.due ? due.due : 'N/A'}
+                    ৳{due.due ? due.due : '0.00'}
                   </Text>
                 </View>
               </View>

@@ -5,6 +5,7 @@ import {
   PermissionsAndroid,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -15,6 +16,7 @@ import {
 
 import {BluetoothManager} from 'react-native-bluetooth-escpos-printer';
 import {PERMISSIONS, RESULTS, requestMultiple} from 'react-native-permissions';
+import {activeBtnColor, defaultGray, dueColor, errorColor} from './ColorSchema';
 import DueLayout from './DueHistory/DueLayout';
 import InvoiceScreen from './InvoiceScreen';
 import PrinterScreen from './PrinterScreen';
@@ -25,6 +27,7 @@ import {
   saveUserApi,
   saveUserData,
 } from './services/SetUserActivate';
+import {userGlobalName} from './userGlobalInfo';
 
 const App = () => {
   // const [showPrinterScreen, setShowPrinterScreen] = useState(false);
@@ -184,6 +187,8 @@ const App = () => {
     }
   };
 
+  const [isReStart, setIsReStart] = useState(false);
+
   const handleButtonPress = async (userID, apiUrl) => {
     try {
       const response = await fetch(
@@ -221,6 +226,7 @@ const App = () => {
       }
 
       console.log('Data fetched and saved successfully:', data);
+      setIsReStart(true);
     } catch (error) {
       console.error('Error fetching or saving data:', error);
     }
@@ -527,22 +533,27 @@ const App = () => {
 
   return (
     <ScrollView style={[styles.container]}>
+      <StatusBar backgroundColor="white" barStyle="dark-content" />
       {!showPrinterScreen && !showInvoiceScreen && !showDueHistoryScreen && (
         <View>
           <View style={styles.header}>
             <Text style={styles.textLabel}>Bell</Text>
-            <Text style={styles.balanceTitle}>Hasan's Store</Text>
+            <View style={styles.balanceContainer}>
+              <Text style={styles.balanceTitle}>{userGlobalName}</Text>
+              <Text style={{fontSize: 16, color: '#2c3e50'}}>
+                নতুন সোনাকান্দা, রোহিতপুর,
+              </Text>
+              <Text style={styles.availableBalance}>কেরানীগঞ্জ, ঢাকা</Text>
+            </View>
+
             <Text style={styles.textLabel}>User</Text>
           </View>
+
           <View style={styles.balanceContainer}>
             <Text style={styles.balanceAmount}>{dateTime}</Text>
-            <Text style={styles.availableBalance}>
-              New Sonakanda, Bus Stand, Ruhitpur,
-            </Text>
-            <Text style={styles.availableBalance}>Keraniganj, Dhaka</Text>
           </View>
           <View style={styles.menu}>
-            {isUserActive !== false && (
+            {isUserActive !== false && !userApiCheck === false && (
               <TouchableOpacity
                 style={
                   boundAddress.length < 1
@@ -557,15 +568,17 @@ const App = () => {
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity
-              onPress={handelDueHistoryButton}
-              style={styles.menuItemDueDisActive}>
-              <Text style={styles.menuItemInBluetoothActiveTextLabel}>
-                Due History 📃
-              </Text>
-            </TouchableOpacity>
+            {!userApiCheck === false && (
+              <TouchableOpacity
+                onPress={handelDueHistoryButton}
+                style={styles.menuItemDueDisActive}>
+                <Text style={styles.menuItemInBluetoothActiveTextLabel}>
+                  বাকির তথ্য 📃
+                </Text>
+              </TouchableOpacity>
+            )}
 
-            {isUserActive !== false && (
+            {isUserActive !== false && !userApiCheck === false && (
               <TouchableOpacity
                 onPress={handleBluetoothButtonPress}
                 style={
@@ -590,6 +603,7 @@ const App = () => {
                   alignContent: 'center',
                   alignItems: 'center',
                   alignSelf: 'center',
+                  marginTop: 30,
                 }}>
                 <View
                   style={{
@@ -602,9 +616,9 @@ const App = () => {
                   }}>
                   <TextInput
                     style={{
-                      height: 40,
-                      width: 300,
-                      borderColor: 'red',
+                      height: 50,
+                      width: 350,
+                      borderColor: defaultGray,
                       borderWidth: 2,
                       paddingHorizontal: 10,
                       //   marginBottom: 20,
@@ -622,7 +636,7 @@ const App = () => {
               <View
                 style={{
                   // flexDirection: 'row',
-                  backgroundColor: '#f0f0f0',
+                  //  backgroundColor: '#f0f0f0',
                   marginTop: 20,
                   // justifyContent: 'center',
                   // alignContent: 'center',
@@ -641,9 +655,9 @@ const App = () => {
                   {!userApiCheck && (
                     <TextInput
                       style={{
-                        height: 40,
-                        width: 300,
-                        borderColor: 'red',
+                        height: 50,
+                        width: 350,
+                        borderColor: defaultGray,
                         borderWidth: 2,
                         paddingHorizontal: 10,
                         //   marginBottom: 20,
@@ -663,7 +677,7 @@ const App = () => {
                       userID && userApi && handleButtonPress(userID);
                     }}
                     style={{
-                      backgroundColor: 'red',
+                      backgroundColor: activeBtnColor,
                       borderRadius: 5,
                       marginLeft: 10,
                       paddingHorizontal: 20,
@@ -679,17 +693,66 @@ const App = () => {
             </View>
           )}
 
-          {isUserActive === false && (
-            <Text
+          {isReStart === true && (
+            <View
               style={{
-                backgroundColor: 'red',
-                fontWeight: 'bold',
-                fontSize: 25,
+                backgroundColor: activeBtnColor,
+                marginHorizontal: 30,
                 textAlign: 'center',
-                marginTop: 20,
+                marginTop: 100,
+                borderRadius: 5,
+                padding: 5,
               }}>
-              Your account is not active. Please Contact On 01927574610
-            </Text>
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                  textAlign: 'center',
+                  color: '#fff',
+                }}>
+                সফল ভাবে অ্যাক্টিভ হয়েছে!!!
+              </Text>
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                  textAlign: 'center',
+                  color: '#fff',
+                }}>
+                অনুগ্রহ করে অ্যাপটি বন্ধ করে আবার চালু করুন
+              </Text>
+            </View>
+          )}
+
+          {isUserActive === false && (
+            <View
+              style={{
+                backgroundColor: errorColor,
+                marginHorizontal: 30,
+                textAlign: 'center',
+                marginTop: 100,
+                borderRadius: 5,
+                paddingVertical: 5,
+              }}>
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                  textAlign: 'center',
+                  color: '#fff',
+                }}>
+                আপনার স্টোরটি চালু করতে নিচের নাম্বারে যোগাযোগ করুন
+              </Text>
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                  textAlign: 'center',
+                  color: '#fff',
+                }}>
+                01927574613, 01874374269
+              </Text>
+            </View>
           )}
 
           {boundAddress.length > 0 && (
@@ -753,7 +816,8 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: '#f0f4f7',
+    //  backgroundColor: '#f0f4f7',
+    backgroundColor: 'white',
     // marginTop: StatusBar.currentHeight,
   },
   header: {
@@ -764,11 +828,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    marginBottom: 10,
+    // marginBottom: 10,
   },
   balanceTitle: {
-    fontSize: 24,
-    color: '#4F8EF7',
+    fontSize: 40,
+    //color: '#4F8EF7',
+    color: defaultGray,
     fontWeight: 'bold',
   },
   balanceContainer: {
@@ -781,7 +846,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   balanceAmount: {
-    fontSize: 36,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#2c3e50',
   },
@@ -797,42 +862,42 @@ const styles = StyleSheet.create({
   menuItemBluetoothDisActive: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#e74c3c',
+    backgroundColor: errorColor,
     padding: 10,
     borderRadius: 10,
-    paddingVertical: 20,
+    paddingVertical: 15,
   },
   menuItemBluetoothActive: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2ECC71',
+    backgroundColor: activeBtnColor,
     padding: 10,
     borderRadius: 10,
-    paddingVertical: 20,
+    paddingVertical: 15,
   },
   menuItemInvoiceDisActive: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2c3e50',
+    backgroundColor: errorColor,
     padding: 10,
     borderRadius: 10,
-    paddingVertical: 20,
+    paddingVertical: 15,
   },
   menuItemInvoiceActive: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4F8EF7',
+    backgroundColor: activeBtnColor,
     padding: 10,
     borderRadius: 10,
-    paddingVertical: 20,
+    paddingVertical: 15,
   },
   menuItemDueDisActive: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F429AA',
+    backgroundColor: dueColor,
     padding: 10,
     borderRadius: 10,
-    paddingVertical: 20,
+    paddingVertical: 15,
   },
   menuItemInvoiceActiveTextLabel: {
     color: 'white',

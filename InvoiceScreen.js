@@ -14,12 +14,14 @@ import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
 // import BluetoothEscposPrinter from 'react-native-bluetooth-escpos-printer';
 
 import {useState} from 'react';
+import {defaultGray, errorColor} from './ColorSchema';
 import {API_URL} from './api_link';
 import PrintInvoicePrinter from './services/PrintInvoicePrinter';
 import {
   getDataFromLocalStorage,
   saveDataToLocalStorage,
 } from './services/ProductNameLocalService';
+import {userGlobalName} from './userGlobalInfo';
 
 const InvoiceScreen = ({onBack}) => {
   const [allProductName, setAllProductName] = useState({});
@@ -282,7 +284,11 @@ const InvoiceScreen = ({onBack}) => {
   const finalPrint = async () => {
     const invoiceDetails = await pSaveAndPrint();
 
+    console.log('print -->');
+
     if (invoiceDetails.customerName === '') {
+      console.log('print ');
+
       setError({
         state: true,
         msg: 'Please enter customer name ',
@@ -529,7 +535,7 @@ const InvoiceScreen = ({onBack}) => {
     <View style={[styles.container]}>
       <View style={styles.header}>
         <Text style={styles.textLabel}>Bell</Text>
-        <Text style={styles.balanceTitle}>Hasan's Store</Text>
+        <Text style={styles.balanceTitle}>{userGlobalName}</Text>
         <Text style={styles.textLabel}>User</Text>
       </View>
       <ScrollView keyboardShouldPersistTaps="handled">
@@ -544,12 +550,12 @@ const InvoiceScreen = ({onBack}) => {
               <TextInput
                 style={{
                   borderWidth: 1,
-                  borderColor: '#4F8EF7',
+                  borderColor: defaultGray,
                   marginRight: 10,
                   padding: 10,
                   flex: 1,
                   borderRadius: 5,
-                  color: '#4F8EF7',
+                  color: defaultGray,
                   marginVertical: 5,
                 }}
                 onChangeText={text => {
@@ -565,12 +571,12 @@ const InvoiceScreen = ({onBack}) => {
               <TextInput
                 style={{
                   borderWidth: 1,
-                  borderColor: '#4F8EF7',
+                  borderColor: defaultGray,
                   marginRight: 10,
                   padding: 10,
                   flex: 1,
                   borderRadius: 5,
-                  color: '#4F8EF7',
+                  color: defaultGray,
                   marginVertical: 5,
                 }}
                 onChangeText={text => setCustomerName(text)}
@@ -604,12 +610,12 @@ const InvoiceScreen = ({onBack}) => {
               // numberOfLines={4}
               style={{
                 borderWidth: 1,
-                borderColor: '#4F8EF7',
+                borderColor: defaultGray,
                 marginRight: 10,
                 padding: 10,
                 flex: 1,
                 borderRadius: 5,
-                color: '#4F8EF7',
+                color: defaultGray,
                 marginVertical: 5,
                 marginBottom: 10,
               }}
@@ -647,12 +653,12 @@ const InvoiceScreen = ({onBack}) => {
                 <TextInput
                   style={{
                     borderWidth: 1,
-                    borderColor: '#4F8EF7',
+                    borderColor: defaultGray,
                     marginRight: 10,
                     padding: 10,
                     flex: 5,
                     borderRadius: 5,
-                    color: '#4F8EF7',
+                    color: defaultGray,
                   }}
                   onChangeText={text => handleChangeText(text, index, 'name')}
                   value={product.name}
@@ -662,12 +668,12 @@ const InvoiceScreen = ({onBack}) => {
                 <TextInput
                   style={{
                     borderWidth: 1,
-                    borderColor: '#4F8EF7',
+                    borderColor: defaultGray,
                     marginRight: 10,
                     padding: 10,
                     flex: 1,
                     borderRadius: 5,
-                    color: '#4F8EF7',
+                    color: defaultGray,
                     textAlign: 'right',
                   }}
                   onChangeText={text => {
@@ -691,12 +697,12 @@ const InvoiceScreen = ({onBack}) => {
                 <TextInput
                   style={{
                     borderWidth: 1,
-                    borderColor: '#4F8EF7',
+                    borderColor: defaultGray,
                     marginRight: 10,
                     padding: 10,
                     flex: 1,
                     borderRadius: 5,
-                    color: '#4F8EF7',
+                    color: defaultGray,
                     textAlign: 'right',
                   }}
                   onChangeText={text => {
@@ -713,7 +719,7 @@ const InvoiceScreen = ({onBack}) => {
                     handleChangeText(newText, index, 'qty');
                   }}
                   value={product.qty}
-                  placeholder="Quantity"
+                  placeholder="Qty"
                   keyboardType="numeric"
                   placeholderTextColor="#A9A9A9"
                 />
@@ -724,19 +730,12 @@ const InvoiceScreen = ({onBack}) => {
 
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              color: 'black',
-            }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: 'bold',
-                color: 'black',
-              }}>
-              -----------------------------------------
-            </Text>
-          </View>
+              borderBottomColor: defaultGray,
+              borderBottomWidth: 1,
+              marginVertical: 10, // Adjust this value to change the spacing above and below the line
+            }}
+          />
+
           <View style={styles.finalTotalRow}>
             <Text style={styles.finalTotalLabel}>Subtotal:</Text>
             <Text style={styles.finalTotal}>
@@ -764,13 +763,13 @@ const InvoiceScreen = ({onBack}) => {
             <TextInput
               style={{
                 borderWidth: 1,
-                borderColor: '#4F8EF7',
+                borderColor: defaultGray,
                 // marginRight: 50,
                 // marginLeft: 200,
                 padding: 10,
                 flex: 1,
                 borderRadius: 5,
-                color: 'red',
+                color: errorColor,
                 textAlign: 'right',
               }}
               onChangeText={text => {
@@ -791,19 +790,11 @@ const InvoiceScreen = ({onBack}) => {
           </View>
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              color: 'black',
-            }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: 'bold',
-                color: 'black',
-              }}>
-              -----------------------------------------
-            </Text>
-          </View>
+              borderBottomColor: defaultGray,
+              borderBottomWidth: 1,
+              marginVertical: 10, // Adjust this value to change the spacing above and below the line
+            }}
+          />
           <View style={styles.finalTotalRow}>
             <Text style={styles.finalTotalLabel}>Final Total: </Text>
             <Text style={styles.finalTotal}>{finalTotal.toFixed(2)}</Text>
@@ -817,14 +808,14 @@ const InvoiceScreen = ({onBack}) => {
             style={{
               flexDirection: 'row',
               marginBottom: 10,
-              marginTop: 0,
+              marginTop: 30,
               alignItems: 'center',
             }}>
             <Text style={{color: 'black'}}>Received Amount : </Text>
             <TextInput
               style={{
                 borderWidth: 1,
-                borderColor: '#4F8EF7',
+                borderColor: defaultGray,
                 marginRight: 10,
                 padding: 10,
                 flex: 1,
@@ -873,7 +864,37 @@ const InvoiceScreen = ({onBack}) => {
             </View>
           )}
 
-          <PrintInvoicePrinter finalPrint={finalPrint}></PrintInvoicePrinter>
+          <PrintInvoicePrinter
+            finalPrint={() => {
+              const constFilterProduct = products.filter(p => p.total !== 0);
+
+              if (
+                customerName !== '' &&
+                customerPhone !== '' &&
+                !constFilterProduct.length === false
+              ) {
+                finalPrint();
+              }
+
+              if (customerName === '') {
+                setError({
+                  state: true,
+                  msg: 'Please enter customer name ',
+                });
+              }
+              if (customerPhone === '') {
+                setError({
+                  state: true,
+                  msg: 'Please enter customer phone number ',
+                });
+              }
+              if (!constFilterProduct.length === true) {
+                setError({
+                  state: true,
+                  msg: 'Please enter product list',
+                });
+              }
+            }}></PrintInvoicePrinter>
         </View>
       </ScrollView>
     </View>
@@ -885,7 +906,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingBottom: 0,
     paddingHorizontal: 5,
-    backgroundColor: '#F5F5F5', // Light gray background
+    backgroundColor: '#fff', // Light gray background
     //marginBottom: 70,
   },
 
@@ -901,7 +922,7 @@ const styles = StyleSheet.create({
   },
   balanceTitle: {
     fontSize: 24,
-    color: '#4F8EF7',
+    color: defaultGray,
     fontWeight: 'bold',
   },
   balanceContainer: {
@@ -933,7 +954,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#4F8EF7',
+    borderColor: defaultGray,
     marginRight: 10,
     padding: 10,
     flex: 1,
@@ -946,7 +967,7 @@ const styles = StyleSheet.create({
   finalTotalRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 10,
+    marginTop: 5,
     marginBottom: 5,
     color: 'black',
   },
@@ -970,7 +991,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginHorizontal: 5,
     marginBottom: 5,
-    backgroundColor: '#4F8EF7',
+    backgroundColor: defaultGray,
     borderRadius: 5,
   },
 });

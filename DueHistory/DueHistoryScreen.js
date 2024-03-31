@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {activeBtnColor, defaultGray, errorColor} from '../ColorSchema';
 
 const DueHistoryScreen = ({
   setPageState,
@@ -30,28 +31,28 @@ const DueHistoryScreen = ({
           setPageState('details');
         }}
         style={{
-          backgroundColor: item.due_amount === 0 ? '#C8E6C9' : '#FFF9E7', // Change background color based on due_amount
+          backgroundColor: item.due_amount === 0 ? activeBtnColor : errorColor, // Change background color based on due_amount
           borderRadius: 10,
           marginBottom: 15,
-          shadowColor: item.due_amount === 0 ? '#4CAF50' : '#FFD600', // Golden shadow
-          shadowOffset: {width: 0, height: 2},
-          shadowOpacity: 0.5, // Increased shadow opacity
+          // shadowColor: item.due_amount === 0 ? '#4CAF50' : '#FFD600', // Golden shadow
+          //   shadowOffset: {width: 0, height: 2},
+          //   shadowOpacity: 0.5, // Increased shadow opacity
           shadowRadius: 5, // Increased shadow radius
-          elevation: 5,
+          //   elevation: 5,
           padding: 15,
           flexDirection: 'row',
           justifyContent: 'space-between',
         }}>
         <View style={{flex: 1}}>
-          <Text style={{color: '#37474F', fontWeight: 'bold'}}>
+          <Text style={{color: '#fff', fontWeight: 'bold'}}>
             {item.user_name}
           </Text>
-          <Text style={{color: '#546E7A', marginBottom: 5}}>
+          <Text style={{color: '#fff', marginBottom: 5}}>
             {item.user_phone}
           </Text>
         </View>
         <View style={{alignItems: 'flex-end'}}>
-          <Text style={{color: '#F44336', fontWeight: 'bold', fontSize: 18}}>
+          <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 18}}>
             Total Due: ৳ {item.due_amount}
           </Text>
         </View>
@@ -76,8 +77,9 @@ const DueHistoryScreen = ({
       style={{
         flex: 1,
         paddingHorizontal: 20,
-        paddingTop: 40,
-        backgroundColor: '#ECEFF1',
+        paddingTop: 10,
+        //   backgroundColor: '#ECEFF1',
+        backgroundColor: '#fff',
       }}>
       <View
         style={{flexDirection: 'row', alignItems: 'center', marginBottom: 20}}>
@@ -85,14 +87,15 @@ const DueHistoryScreen = ({
           style={{
             flex: 1,
             borderWidth: 1,
-            borderColor: '#B0BEC5',
+            borderColor: defaultGray,
             paddingVertical: 12,
             paddingHorizontal: 15,
             borderRadius: 25,
-            marginRight: 10,
+            marginRight: 0,
             backgroundColor: '#FFF',
             color: '#37474F',
           }}
+          placeholderTextColor={defaultGray}
           placeholder="Enter Phone Number or Name"
           value={searchQuery}
           onChangeText={handleSearch}
