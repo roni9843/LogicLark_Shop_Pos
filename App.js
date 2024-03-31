@@ -13,8 +13,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
 import {BluetoothManager} from 'react-native-bluetooth-escpos-printer';
+import DeviceInfo from 'react-native-device-info';
 import {PERMISSIONS, RESULTS, requestMultiple} from 'react-native-permissions';
 import {activeBtnColor, defaultGray, dueColor, errorColor} from './ColorSchema';
 import DueLayout from './DueHistory/DueLayout';
@@ -154,15 +154,56 @@ const App = () => {
   const [showDueHistoryScreen, setShowDueHistoryScreen] = useState(false);
 
   const [userID, setUserID] = useState('');
+  const [deviceId, setDeviceId] = useState('');
   const [userApi, setUserApi] = useState('');
   const [userActivatorData, setUserActivatorData] = useState(null);
   const [isUserActive, setUserActive] = useState(false);
   const [userApiCheck, setUserApiCheck] = useState(false);
 
   useEffect(() => {
+    postDeviceId();
+  }, []);
+
+  useEffect(() => {
     fetchDataLocalStorage();
   }, []);
 
+  // ? post user device id
+  const postDeviceId = async () => {
+    const id = await DeviceInfo.getUniqueId();
+
+    const apiUrl = await API_URL;
+
+    if (!apiUrl) {
+      try {
+        const response = await fetch(
+          'https://logic-lark-shop-pos-security.vercel.app/RequestDeviceId',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({deviceId: id}),
+          },
+        );
+
+        if (response.ok) {
+          console.log('PermissionDeviceIdNumber created successfully');
+          // Handle success as needed, such as showing a success message or redirecting
+        } else {
+          console.error('Failed to create PermissionDeviceIdNumber');
+          // Handle failure, such as showing an error message
+        }
+      } catch (error) {
+        console.error('Error creating PermissionDeviceIdNumber:', error);
+        // Handle error, such as showing an error message
+      }
+    }
+  };
+
+  // ? check is local database exist  api
+  // ? if exist then run app
+  // ? if does not exist then this user is new and open code and url link input field
   const fetchDataLocalStorage = async () => {
     try {
       const userData = await getUserData();
@@ -626,7 +667,45 @@ const App = () => {
                       backgroundColor: '#fff',
                       color: 'black',
                     }}
-                    placeholder="Enter Code"
+                    placeholder="Enter Device Code"
+                    placeholderTextColor="#999"
+                    onChangeText={text => setDeviceId(text)}
+                    value={deviceId}
+                  />
+                </View>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  backgroundColor: '#f0f0f0',
+                  justifyContent: 'center',
+                  alignContent: 'center',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                  marginTop: 20,
+                }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    alignContent: 'center',
+                    alignItems: 'center',
+                    alignSelf: 'center',
+                  }}>
+                  <TextInput
+                    style={{
+                      height: 50,
+                      width: 350,
+                      borderColor: defaultGray,
+                      borderWidth: 2,
+                      paddingHorizontal: 10,
+                      //   marginBottom: 20,
+                      borderRadius: 8,
+                      backgroundColor: '#fff',
+                      color: 'black',
+                    }}
+                    placeholder="Enter User Code"
                     placeholderTextColor="#999"
                     onChangeText={text => setUserID(text)}
                     value={userID}
@@ -673,8 +752,13 @@ const App = () => {
                   )}
 
                   <TouchableOpacity
-                    onPress={() => {
-                      userID && userApi && handleButtonPress(userID);
+                    onPress={async () => {
+                      const thisUserDeviceId = await DeviceInfo.getUniqueId();
+
+                      thisUserDeviceId == deviceId &&
+                        userID &&
+                        userApi &&
+                        handleButtonPress(userID);
                     }}
                     style={{
                       backgroundColor: activeBtnColor,

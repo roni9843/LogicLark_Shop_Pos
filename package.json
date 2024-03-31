@@ -16,6 +16,7 @@
     "react-devtools": "^5.0.2",
     "react-native": "0.68.2",
     "react-native-bluetooth-escpos-printer": "git+https://github.com/hudoro-solusi-digital/react-native-bluetooth-escpos-printer",
+    "react-native-device-info": "^10.13.1",
     "react-native-permissions": "^3.3.1",
     "react-native-vector-icons": "^10.0.3"
   },
