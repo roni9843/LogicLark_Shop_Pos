@@ -597,11 +597,22 @@ const App = () => {
             {isUserActive !== false && !userApiCheck === false && (
               <TouchableOpacity
                 style={
-                  boundAddress.length < 1
-                    ? styles.menuItemInvoiceDisActive
-                    : styles.menuItemInvoiceActive
+                  // ! --**-- this is old with bluetooth
+                  // boundAddress.length < 1
+                  //   ? styles.menuItemInvoiceDisActive
+                  //   : styles.menuItemInvoiceActive
+
+                  // * --**-- this is new without bluetooth
+
+                  styles.menuItemInvoiceActive
                 }
-                disabled={boundAddress.length < 1 ? true : false}
+                disabled={
+                  // ! --**-- this is old with bluetooth
+                  // boundAddress.length < 1 ? true : false
+
+                  // * --**-- this is new without bluetooth
+                  false
+                }
                 onPress={handleInvoiceButtonPress}>
                 <Text style={styles.menuItemInvoiceActiveTextLabel}>
                   InVoice 🖨️

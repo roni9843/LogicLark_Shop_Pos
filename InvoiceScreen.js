@@ -1,5 +1,6 @@
 import React, {useEffect} from 'react';
 import {
+  ActivityIndicator,
   Alert,
   BackHandler,
   ScrollView,
@@ -14,7 +15,8 @@ import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
 // import BluetoothEscposPrinter from 'react-native-bluetooth-escpos-printer';
 
 import {useState} from 'react';
-import {defaultGray, errorColor} from './ColorSchema';
+import {activeBtnColor, defaultGray, errorColor} from './ColorSchema';
+import ToastMessage from './ToastMessage';
 import {API_URL} from './api_link';
 import PrintInvoicePrinter from './services/PrintInvoicePrinter';
 import {
@@ -24,6 +26,22 @@ import {
 import {userGlobalName} from './userGlobalInfo';
 
 const InvoiceScreen = ({onBack}) => {
+  // loading spring
+  const [loadingSpring, setLoadingSpring] = useState(false);
+
+  // * --**-- this is new without bluetooth
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const showToast = message => {
+    setToastMessage(message);
+    setToastVisible(true);
+  };
+  const hideToast = () => {
+    setToastVisible(false);
+    setToastMessage('');
+  };
+  // * --**--
+
   const [allProductName, setAllProductName] = useState({});
 
   const [localDataRaw, setLocalDataRaw] = useState([]);
@@ -66,7 +84,7 @@ const InvoiceScreen = ({onBack}) => {
     {name: '', price: '', qty: '', total: 0},
   ]);
   const [finalTotal, setFinalTotal] = useState(0);
-  const [discount, setDiscount] = useState(''); // Use a string to handle empty input
+  const [discount, setDiscount] = useState(0); // Use a string to handle empty input
   const [receivedAmount, setReceivedAmount] = useState(0); // Use a string to handle empty input
   const [suggestions, setSuggestions] = useState([]);
   const [customerName, setCustomerName] = useState('');
@@ -204,17 +222,26 @@ const InvoiceScreen = ({onBack}) => {
   const pSaveAndPrint = async () => {
     const constFilterProduct = products.filter(p => p.total !== 0);
 
+    console.log(
+      'this is ------------------------------------ > ',
+
+      parseFloat(receivedAmount).toFixed(2),
+    );
+
     const detailsConsole = {
       products: constFilterProduct,
-      subtotal: calculateSubtotal().toFixed(2),
-      discount: discount.toFixed(2),
-      finalTotal: finalTotal.toFixed(2),
+      subtotal: parseFloat(calculateSubtotal()).toFixed(2),
+      discount: parseFloat(discount).toFixed(2),
+      finalTotal: parseFloat(finalTotal).toFixed(2),
       customerName: customerName,
       // customerDetails: customerDetails,
       customerPhone: customerPhone,
-      finalTotal: finalTotal.toFixed(2),
-      receivedAmount: receivedAmount.toFixed(2),
-      due: (finalTotal - receivedAmount).toFixed(2),
+      finalTotal: parseFloat(finalTotal).toFixed(2),
+      receivedAmount: parseFloat(receivedAmount).toFixed(2),
+      due: (
+        parseFloat(finalTotal).toFixed(2) -
+        parseFloat(receivedAmount).toFixed(2)
+      ).toFixed(2),
     };
 
     const newData = detailsConsole.products.map(item => ({
@@ -279,6 +306,99 @@ const InvoiceScreen = ({onBack}) => {
       ],
       {cancelable: false},
     );
+  };
+
+  const finalPrintWithoutBluetooth = async () => {
+    setLoadingSpring(true);
+    // showToast('Successful');
+
+    const invoiceDetails = await pSaveAndPrint();
+
+    console.log('print -->', invoiceDetails);
+
+    if (invoiceDetails.customerName === '') {
+      console.log('print ');
+
+      setError({
+        state: true,
+        msg: 'Please enter customer name ',
+      });
+
+      return;
+    }
+    if (invoiceDetails.customerPhone === '') {
+      setError({
+        state: true,
+        msg: 'Please enter customer phone number ',
+      });
+
+      return;
+    }
+    if (!invoiceDetails.products.length === true) {
+      setError({
+        state: true,
+        msg: 'Please enter product list',
+      });
+
+      return;
+    }
+
+    const date = new Date('2024-02-05T19:31:00');
+    const formattedDate = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+    if (printCountValidation === 1) {
+      const fetchData = {
+        user_name: invoiceDetails.customerName,
+        user_phone: `${invoiceDetails.customerPhone}`,
+        inId: invoiceNumber,
+        details: invoiceDetails.products,
+        subTotal: parseInt(invoiceDetails.subtotal),
+        discount: parseInt(invoiceDetails.discount),
+        total: parseInt(invoiceDetails.finalTotal),
+        accountReceived: parseInt(invoiceDetails.receivedAmount),
+        due: parseInt(invoiceDetails.due),
+      };
+
+      try {
+        const apiUrl = await API_URL;
+
+        const response = await fetch(`${apiUrl}/createUserAndDue`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(fetchData),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Handle the data received from the API
+          console.log('Data from API:', data);
+          console.log('Data from fetchData:', fetchData);
+
+          showSuccessAlert();
+
+          setProducts([{name: '', price: '', qty: '', total: 0}]);
+          setCustomerPhone('');
+          setCustomerName('');
+
+          setFinalTotal(0);
+          setDiscount('');
+          setReceivedAmount(0);
+
+          setCustomerInfoFetch([]);
+          setPreviousTotalDue(0);
+          setLoadingSpring(false);
+          //  showToast('Successful');
+        } else {
+          console.error('Failed to fetch data:', response.status);
+          setLoadingSpring(false);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoadingSpring(false);
+      }
+    }
   };
 
   const finalPrint = async () => {
@@ -864,37 +984,53 @@ const InvoiceScreen = ({onBack}) => {
             </View>
           )}
 
-          <PrintInvoicePrinter
-            finalPrint={() => {
-              const constFilterProduct = products.filter(p => p.total !== 0);
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <ToastMessage
+              message={toastMessage}
+              isVisible={toastVisible}
+              onHide={hideToast}
+            />
+          </View>
 
-              if (
-                customerName !== '' &&
-                customerPhone !== '' &&
-                !constFilterProduct.length === false
-              ) {
-                finalPrint();
-              }
+          {loadingSpring ? (
+            <ActivityIndicator size="large" color={activeBtnColor} />
+          ) : (
+            <PrintInvoicePrinter
+              finalPrint={() => {
+                const constFilterProduct = products.filter(p => p.total !== 0);
 
-              if (customerName === '') {
-                setError({
-                  state: true,
-                  msg: 'Please enter customer name ',
-                });
-              }
-              if (customerPhone === '') {
-                setError({
-                  state: true,
-                  msg: 'Please enter customer phone number ',
-                });
-              }
-              if (!constFilterProduct.length === true) {
-                setError({
-                  state: true,
-                  msg: 'Please enter product list',
-                });
-              }
-            }}></PrintInvoicePrinter>
+                if (
+                  customerName !== '' &&
+                  customerPhone !== '' &&
+                  !constFilterProduct.length === false
+                ) {
+                  // ! --**-- this is old with bluetooth
+                  // finalPrint();
+                  // * --**-- this is new without bluetooth
+                  finalPrintWithoutBluetooth();
+                }
+
+                if (customerName === '') {
+                  setError({
+                    state: true,
+                    msg: 'Please enter customer name ',
+                  });
+                }
+                if (customerPhone === '') {
+                  setError({
+                    state: true,
+                    msg: 'Please enter customer phone number ',
+                  });
+                }
+                if (!constFilterProduct.length === true) {
+                  setError({
+                    state: true,
+                    msg: 'Please enter product list',
+                  });
+                }
+              }}></PrintInvoicePrinter>
+          )}
         </View>
       </ScrollView>
     </View>

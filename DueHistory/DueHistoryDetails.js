@@ -235,6 +235,8 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
     // Convert the date string to a Date object
     const date = new Date(due.date);
 
+    console.log('this print data  ', due);
+
     // Format the date
     const formattedDate = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 
@@ -594,7 +596,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-            <ActivityIndicator size="large" color="#333" />
+            <ActivityIndicator size="large" color={activeBtnColor} />
           </View>
         ) : (
           <TouchableOpacity
@@ -664,9 +666,15 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                   }}>
                   বকেয়া গ্রহন
                 </Text>
+
                 <TouchableOpacity onPress={() => printDue(due)}>
                   <Text
-                    style={{fontSize: 22, fontWeight: 'bold', color: '#000'}}>
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 'bold',
+                      color: '#000',
+                      display: 'none',
+                    }}>
                     🖨️
                   </Text>
                 </TouchableOpacity>
@@ -759,6 +767,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
                       fontWeight: 'bold',
                       color: '#4F8EF7',
                       marginBottom: 5,
+                      display: 'none',
                     }}>
                     🖨️
                   </Text>
