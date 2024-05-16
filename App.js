@@ -406,7 +406,9 @@ const App = () => {
               <Text style={{fontSize: 16, color: '#2c3e50'}}>
                 এই অ্যাপটি অ্যাক্টিভ থাকবে আর {activeHours} ঘণ্টা
               </Text>
-              <Text style={styles.availableBalance}>_____________</Text>
+              <Text style={styles.availableBalance}>
+                01927574613, 01874374269
+              </Text>
             </View>
 
             <Text style={styles.textLabel}>User</Text>
