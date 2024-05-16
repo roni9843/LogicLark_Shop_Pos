@@ -17,12 +17,12 @@ import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
 import {useState} from 'react';
 import {activeBtnColor, defaultGray, errorColor} from './ColorSchema';
 import ToastMessage from './ToastMessage';
-import {API_URL} from './api_link';
 import PrintInvoicePrinter from './services/PrintInvoicePrinter';
 import {
   getDataFromLocalStorage,
   saveDataToLocalStorage,
 } from './services/ProductNameLocalService';
+import {getUserApi} from './services/SetUserActivate';
 import {userGlobalName} from './userGlobalInfo';
 
 const InvoiceScreen = ({onBack}) => {
@@ -125,7 +125,7 @@ const InvoiceScreen = ({onBack}) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = await API_URL; // Await API_URL promise
+        const apiUrl = await getUserApi(); // Await  getUserApi() promise
         if (customerPhone.length > 4 && customerPhone !== prevCustomerPhone) {
           const response = await fetch(`${apiUrl}/findBy1stNumber`, {
             method: 'POST',
@@ -360,7 +360,7 @@ const InvoiceScreen = ({onBack}) => {
       };
 
       try {
-        const apiUrl = await API_URL;
+        const apiUrl = await getUserApi();
 
         const response = await fetch(`${apiUrl}/createUserAndDue`, {
           method: 'POST',
@@ -483,7 +483,7 @@ const InvoiceScreen = ({onBack}) => {
       };
 
       try {
-        const apiUrl = await API_URL;
+        const apiUrl = await getUserApi();
 
         const response = await fetch(`${apiUrl}/createUserAndDue`, {
           method: 'POST',
@@ -654,9 +654,7 @@ const InvoiceScreen = ({onBack}) => {
   return (
     <View style={[styles.container]}>
       <View style={styles.header}>
-        <Text style={styles.textLabel}>Bell</Text>
         <Text style={styles.balanceTitle}>{userGlobalName}</Text>
-        <Text style={styles.textLabel}>User</Text>
       </View>
       <ScrollView keyboardShouldPersistTaps="handled">
         <View style={styles.container}>
@@ -719,7 +717,7 @@ const InvoiceScreen = ({onBack}) => {
                     setCustomerName(p.user_name);
                   }}
                   style={styles.suggestionItem}>
-                  <Text>{p.user_phone}</Text>
+                  <Text style={{color: 'white'}}>{p.user_phone}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -764,7 +762,7 @@ const InvoiceScreen = ({onBack}) => {
                       key={suggestion}
                       style={styles.suggestionItem}
                       onPress={() => handleSuggestionPress(suggestion, index)}>
-                      <Text>{suggestion}</Text>
+                      <Text style={{color: 'white'}}>{suggestion}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -1048,7 +1046,9 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
+    textAlign: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',

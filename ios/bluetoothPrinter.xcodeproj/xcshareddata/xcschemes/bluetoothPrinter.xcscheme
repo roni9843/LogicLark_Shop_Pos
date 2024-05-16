@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "hasanshoppos.app"
-               BlueprintName = "hasanshoppos"
-               ReferencedContainer = "container:hasanshoppos.xcodeproj">
+               BuildableName = "demo_shop_pos.app"
+               BlueprintName = "demo_shop_pos"
+               ReferencedContainer = "container:demo_shop_pos.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "hasanshopposTests.xctest"
-               BlueprintName = "hasanshopposTests"
-               ReferencedContainer = "container:hasanshoppos.xcodeproj">
+               BuildableName = "demo_shop_posTests.xctest"
+               BlueprintName = "demo_shop_posTests"
+               ReferencedContainer = "container:demo_shop_pos.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "hasanshoppos.app"
-            BlueprintName = "hasanshoppos"
-            ReferencedContainer = "container:hasanshoppos.xcodeproj">
+            BuildableName = "demo_shop_pos.app"
+            BlueprintName = "demo_shop_pos"
+            ReferencedContainer = "container:demo_shop_pos.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "hasanshoppos.app"
-            BlueprintName = "hasanshoppos"
-            ReferencedContainer = "container:hasanshoppos.xcodeproj">
+            BuildableName = "demo_shop_pos.app"
+            BlueprintName = "demo_shop_pos"
+            ReferencedContainer = "container:demo_shop_pos.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

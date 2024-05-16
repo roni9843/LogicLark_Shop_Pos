@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {BackHandler, StyleSheet, Text, View} from 'react-native';
 import {defaultGray} from '../ColorSchema';
-import {API_URL} from '../api_link';
+import {getUserApi} from '../services/SetUserActivate';
 import {userGlobalName} from '../userGlobalInfo';
 import DueHistoryDetails from './DueHistoryDetails';
 import DueHistoryScreen from './DueHistoryScreen';
@@ -41,7 +41,7 @@ const DueLayout = ({onBack}) => {
 
   const ApiCall = async () => {
     try {
-      const apiUrl = await API_URL;
+      const apiUrl = await getUserApi();
 
       console.log(99999, apiUrl);
 
@@ -68,8 +68,8 @@ const DueLayout = ({onBack}) => {
       if (response.ok) {
         const data = await response.json();
         // Handle the data received from the API
-        console.log('Data from API:', data);
-        setAllUserInfo(data);
+        console.log('Data from API:', data.slice().reverse());
+        setAllUserInfo(data.slice().reverse());
       } else {
         console.error('Failed to fetch data:', response.status);
       }
@@ -94,9 +94,7 @@ const DueLayout = ({onBack}) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.textLabel}>Bell</Text>
         <Text style={styles.balanceTitle}>{userGlobalName}</Text>
-        <Text style={styles.textLabel}>User</Text>
       </View>
 
       {pageState === 'history' ? (
@@ -129,7 +127,11 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+
+    // justifyContent: 'space-between',
+    textAlign: 'center',
+    justifyContent: 'center',
+
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',

@@ -15,7 +15,7 @@ import {
   dueColor,
   errorColor,
 } from '../ColorSchema';
-import {API_URL} from '../api_link';
+import {getUserApi} from '../services/SetUserActivate';
 
 const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
   console.log('this is id :', individualUserDue);
@@ -29,7 +29,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
 
   const callFetch = async () => {
     try {
-      const apiUrl = await API_URL;
+      const apiUrl = await getUserApi();
 
       console.log('5555555555555555555555555555 ', apiUrl);
 
@@ -111,7 +111,7 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
         due_history: parseInt(userInfo?.user?.due_amount),
       };
 
-      const apiUrl = await API_URL;
+      const apiUrl = await getUserApi();
 
       console.log('8888888888888888888888888888888 -> ', `${apiUrl}/createDue`);
 

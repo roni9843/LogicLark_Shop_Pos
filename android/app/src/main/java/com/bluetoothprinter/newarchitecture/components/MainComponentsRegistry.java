@@ -1,4 +1,4 @@
-package com.hasanshoppos.newarchitecture.components;
+package com.demo_shop_pos.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

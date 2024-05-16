@@ -1,4 +1,4 @@
-package com.hasanshoppos;
+package com.demo_shop_pos;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
@@ -12,7 +12,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "hasanshoppos";
+    return "demo_shop_pos";
   }
 
   /**

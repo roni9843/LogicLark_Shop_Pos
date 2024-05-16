@@ -8,21 +8,19 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   ToastAndroid,
   TouchableOpacity,
   View,
 } from 'react-native';
 import {BluetoothManager} from 'react-native-bluetooth-escpos-printer';
-import DeviceInfo from 'react-native-device-info';
 import {PERMISSIONS, RESULTS, requestMultiple} from 'react-native-permissions';
 import {activeBtnColor, defaultGray, dueColor, errorColor} from './ColorSchema';
 import DueLayout from './DueHistory/DueLayout';
 import InvoiceScreen from './InvoiceScreen';
 import PrinterScreen from './PrinterScreen';
-import {API_URL} from './api_link';
 import {getBluetoothData} from './services/BluetoothService';
 import {
+  getUserApi,
   getUserData,
   saveUserApi,
   saveUserData,
@@ -30,244 +28,68 @@ import {
 import {userGlobalName} from './userGlobalInfo';
 
 const App = () => {
-  // const [showPrinterScreen, setShowPrinterScreen] = useState(false);
-  // const [showInvoiceScreen, setShowInvoiceScreen] = useState(false);
-  // const [showDueHistoryScreen, setShowDueHistoryScreen] = useState(false);
-
-  // // ** user activator
-  // const [userID, setUserID] = useState('');
-  // const [userApi, setUserApi] = useState('');
-  // const [userActivatorData, setUserActivatorData] = useState(null);
-  // const [isUserActive, setUserActive] = useState(false);
-  // const [userApiCheck, setUserApiCheck] = useState(false);
-
-  // useEffect(() => {
-  //   fetchDataLocalStorage();
-  // }, []);
-
-  // const fetchDataLocalStorage = async () => {
-  //   const userData = await getUserData();
-  //   const apiUrl = await API_URL;
-
-  //   // return console.log(apiUrl, '======');
-
-  //   setUserApiCheck(apiUrl ? true : false);
-
-  //   setUserActivatorData(userData);
-  //   console.log('local host geeeeet ', userData);
-
-  //   if (userData) {
-  //     // Provided time
-  //     var providedTime = new Date(userData.userTimeLimit);
-
-  //     // Current time
-  //     var currentTime = new Date();
-
-  //     // Compare
-  //     if (providedTime < currentTime) {
-  //       handleButtonPress(userData.userID, apiUrl);
-  //       setUserActive(false);
-  //     } else {
-  //       setUserActive(true);
-  //     }
-  //   } else {
-  //     setUserActive(false);
-  //   }
-  // };
-
-  // const handleButtonPress = async userID => {
-  //   console.log('call', userID);
-
-  //   try {
-  //     const response = await fetch(
-  //       'https://logic-lark-shop-pos-security.vercel.app/findUserTimeLimit',
-  //       {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         },
-  //         body: JSON.stringify({
-  //           //   userId: userID,
-  //           userId: `${userID}`,
-  //         }),
-  //       },
-  //     );
-
-  //     // if (!response.ok) {
-  //     //   throw new Error('Network response was not ok');
-  //     // }
-
-  //     const data = await response.json();
-
-  //     if (data.status === true) {
-  //       // Provided time
-  //       var providedTime = new Date(data.user.timeLimit);
-
-  //       // Current time
-  //       var currentTime = new Date();
-
-  //       // Compare
-  //       if (providedTime < currentTime) {
-  //         setUserActive(false);
-
-  //         // Save data using saveUserData function
-
-  //         const apiUrl = await API_URL;
-
-  //         if (apiUrl) {
-  //           await saveUserData(data.user._id, data.user.timeLimit);
-
-  //           await saveUserApi(apiUrl);
-  //         } else {
-  //           await saveUserData(data.user._id, data.user.timeLimit);
-  //           await saveUserApi(userApi);
-  //         }
-
-  //         setUserActivatorData(true);
-  //       } else {
-  //         setUserActive(true);
-
-  //         const apiUrl = await API_URL;
-  //         if (apiUrl) {
-  //           await saveUserData(data.user._id, data.user.timeLimit);
-
-  //           await saveUserApi(apiUrl);
-  //         } else {
-  //           await saveUserData(data.user._id, data.user.timeLimit);
-  //           await saveUserApi(userApi);
-  //         }
-
-  //         setUserActivatorData(data);
-  //       }
-  //     } else {
-  //       setUserActive(false);
-  //     }
-
-  //     console.log('Data fetched and saved successfully:', data);
-  //   } catch (error) {
-  //     console.error('Error fetching or saving data:', error);
-  //   }
-  // };
-
   const [showPrinterScreen, setShowPrinterScreen] = useState(false);
   const [showInvoiceScreen, setShowInvoiceScreen] = useState(false);
   const [showDueHistoryScreen, setShowDueHistoryScreen] = useState(false);
 
-  const [userID, setUserID] = useState('');
-  const [deviceId, setDeviceId] = useState('');
-  const [userApi, setUserApi] = useState('');
+  const [activeHours, setActiveHours] = useState(0);
+
   const [userActivatorData, setUserActivatorData] = useState(null);
   const [isUserActive, setUserActive] = useState(false);
   const [userApiCheck, setUserApiCheck] = useState(false);
 
   useEffect(() => {
-    postDeviceId();
-  }, []);
-
-  useEffect(() => {
     fetchDataLocalStorage();
   }, []);
-
-  // ? post user device id
-  const postDeviceId = async () => {
-    const id = await DeviceInfo.getUniqueId();
-
-    const apiUrl = await API_URL;
-
-    if (!apiUrl) {
-      try {
-        const response = await fetch(
-          'https://logic-lark-shop-pos-security.vercel.app/RequestDeviceId',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({deviceId: id}),
-          },
-        );
-
-        if (response.ok) {
-          console.log('PermissionDeviceIdNumber created successfully');
-          // Handle success as needed, such as showing a success message or redirecting
-        } else {
-          console.error('Failed to create PermissionDeviceIdNumber');
-          // Handle failure, such as showing an error message
-        }
-      } catch (error) {
-        console.error('Error creating PermissionDeviceIdNumber:', error);
-        // Handle error, such as showing an error message
-      }
-    }
-  };
 
   // ? check is local database exist  api
   // ? if exist then run app
   // ? if does not exist then this user is new and open code and url link input field
   const fetchDataLocalStorage = async () => {
     try {
-      const userData = await getUserData();
-      const apiUrl = await API_URL;
+      let userData = await getUserData(); // userId and time limit
+      let apiUrl = await getUserApi();
+
+      console.log('this is user data 1-> ', userData, apiUrl);
+
+      // ? if user data not null then this is new user
+      if (userData === null && apiUrl === null) {
+        await saveUserApi('https://logic-lark-shop-pos-backend.vercel.app');
+
+        // Get the current time in milliseconds since Unix Epoch
+        const currentTime = new Date().getTime();
+
+        // Add 72 hours (72 * 60 * 60 * 1000 milliseconds) to the current time
+        const newTime = new Date(currentTime + 72 * 60 * 60 * 1000);
+
+        await saveUserData(newTime);
+      }
+
+      userData = await getUserData(); // userId and time limit
+      apiUrl = await getUserApi();
+
+      // Convert the string to a Date object
+      const dateObject = new Date(userData);
+
+      setActiveHours(dateObject.getHours());
+
+      console.log('this is user data 2-> ', userData, apiUrl);
+
       setUserApiCheck(!!apiUrl);
 
       setUserActivatorData(userData);
 
+      // ? if user data exist then check valid or invalid
       if (userData) {
-        const providedTime = new Date(userData.userTimeLimit);
-        const currentTime = new Date();
-
-        setUserActive(providedTime > currentTime);
-
-        if (providedTime < currentTime) {
-          await handleButtonPress(userData.userID, apiUrl);
-          setUserActive(false);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching or saving data:', error);
-    }
-  };
-
-  const [isReStart, setIsReStart] = useState(false);
-
-  const handleButtonPress = async (userID, apiUrl) => {
-    try {
-      const response = await fetch(
-        'https://logic-lark-shop-pos-security.vercel.app/findUserTimeLimit',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({userId: `${userID}`}),
-        },
-      );
-
-      const data = await response.json();
-
-      if (data.status === true) {
-        const providedTime = new Date(data.user.timeLimit);
+        const providedTime = new Date(userData);
         const currentTime = new Date();
 
         setUserActive(providedTime > currentTime);
 
         if (providedTime < currentTime) {
           setUserActive(false);
-          await saveUserDataAndApi(data.user._id, data.user.timeLimit, apiUrl);
-        } else {
-          await saveUserDataAndApi(
-            data.user._id,
-            data.user.timeLimit,
-            apiUrl || userApi,
-          );
-          setUserActivatorData(data);
         }
-      } else {
-        setUserActive(false);
       }
-
-      console.log('Data fetched and saved successfully:', data);
-      setIsReStart(true);
     } catch (error) {
       console.error('Error fetching or saving data:', error);
     }
@@ -582,9 +404,9 @@ const App = () => {
             <View style={styles.balanceContainer}>
               <Text style={styles.balanceTitle}>{userGlobalName}</Text>
               <Text style={{fontSize: 16, color: '#2c3e50'}}>
-                নতুন সোনাকান্দা, রোহিতপুর,
+                এই অ্যাপটি অ্যাক্টিভ থাকবে আর {activeHours} ঘণ্টা
               </Text>
-              <Text style={styles.availableBalance}>কেরানীগঞ্জ, ঢাকা</Text>
+              <Text style={styles.availableBalance}>_____________</Text>
             </View>
 
             <Text style={styles.textLabel}>User</Text>
@@ -625,7 +447,7 @@ const App = () => {
                 onPress={handelDueHistoryButton}
                 style={styles.menuItemDueDisActive}>
                 <Text style={styles.menuItemInBluetoothActiveTextLabel}>
-                  বাকির তথ্য 📃
+                  কাস্টমারের তথ্য 📃
                 </Text>
               </TouchableOpacity>
             )}
@@ -645,180 +467,9 @@ const App = () => {
             )}
           </View>
 
-          {userActivatorData === null && (
-            <View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  backgroundColor: '#f0f0f0',
-                  justifyContent: 'center',
-                  alignContent: 'center',
-                  alignItems: 'center',
-                  alignSelf: 'center',
-                  marginTop: 30,
-                }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                    alignItems: 'center',
-                    alignSelf: 'center',
-                  }}>
-                  <TextInput
-                    style={{
-                      height: 50,
-                      width: 350,
-                      borderColor: defaultGray,
-                      borderWidth: 2,
-                      paddingHorizontal: 10,
-                      //   marginBottom: 20,
-                      borderRadius: 8,
-                      backgroundColor: '#fff',
-                      color: 'black',
-                    }}
-                    placeholder="Enter Device Code"
-                    placeholderTextColor="#999"
-                    onChangeText={text => setDeviceId(text)}
-                    value={deviceId}
-                  />
-                </View>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  backgroundColor: '#f0f0f0',
-                  justifyContent: 'center',
-                  alignContent: 'center',
-                  alignItems: 'center',
-                  alignSelf: 'center',
-                  marginTop: 20,
-                }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                    alignItems: 'center',
-                    alignSelf: 'center',
-                  }}>
-                  <TextInput
-                    style={{
-                      height: 50,
-                      width: 350,
-                      borderColor: defaultGray,
-                      borderWidth: 2,
-                      paddingHorizontal: 10,
-                      //   marginBottom: 20,
-                      borderRadius: 8,
-                      backgroundColor: '#fff',
-                      color: 'black',
-                    }}
-                    placeholder="Enter User Code"
-                    placeholderTextColor="#999"
-                    onChangeText={text => setUserID(text)}
-                    value={userID}
-                  />
-                </View>
-              </View>
-              <View
-                style={{
-                  // flexDirection: 'row',
-                  //  backgroundColor: '#f0f0f0',
-                  marginTop: 20,
-                  // justifyContent: 'center',
-                  // alignContent: 'center',
-                  // alignItems: 'center',
-                  // alignSelf: 'center',
-                }}>
-                <View
-                  style={{
-                    //  flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    //  alignContent: 'center',
-                    //  alignItems: 'center',
-                    //  alignSelf: 'center',
-                  }}>
-                  {!userApiCheck && (
-                    <TextInput
-                      style={{
-                        height: 50,
-                        width: 350,
-                        borderColor: defaultGray,
-                        borderWidth: 2,
-                        paddingHorizontal: 10,
-                        //   marginBottom: 20,
-                        borderRadius: 8,
-                        backgroundColor: '#fff',
-                        color: 'black',
-                      }}
-                      placeholder="Enter Api Link"
-                      placeholderTextColor="#999"
-                      onChangeText={text => setUserApi(text)}
-                      value={userApi}
-                    />
-                  )}
-
-                  <TouchableOpacity
-                    onPress={async () => {
-                      const thisUserDeviceId = await DeviceInfo.getUniqueId();
-
-                      thisUserDeviceId == deviceId &&
-                        userID &&
-                        userApi &&
-                        handleButtonPress(userID);
-                    }}
-                    style={{
-                      backgroundColor: activeBtnColor,
-                      borderRadius: 5,
-                      marginLeft: 10,
-                      paddingHorizontal: 20,
-                      paddingVertical: 10,
-                      marginTop: 20,
-                    }}>
-                    <Text style={{color: '#fff', fontWeight: 'bold'}}>
-                      Activate
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          )}
-
-          {isReStart === true && (
-            <View
-              style={{
-                backgroundColor: activeBtnColor,
-                marginHorizontal: 30,
-                textAlign: 'center',
-                marginTop: 100,
-                borderRadius: 5,
-                padding: 5,
-              }}>
-              <Text
-                style={{
-                  fontWeight: 'bold',
-                  fontSize: 20,
-                  textAlign: 'center',
-                  color: '#fff',
-                }}>
-                সফল ভাবে অ্যাক্টিভ হয়েছে!!!
-              </Text>
-              <Text
-                style={{
-                  fontWeight: 'bold',
-                  fontSize: 20,
-                  textAlign: 'center',
-                  color: '#fff',
-                }}>
-                অনুগ্রহ করে অ্যাপটি বন্ধ করে আবার চালু করুন
-              </Text>
-            </View>
-          )}
-
+          {
+            // * when app's time limit end
+          }
           {isUserActive === false && (
             <View
               style={{
@@ -850,6 +501,9 @@ const App = () => {
             </View>
           )}
 
+          {
+            // * this is bluetooth
+          }
           {boundAddress.length > 0 && (
             <TouchableOpacity style={styles.upgrade}>
               <Text style={styles.upgradeText}>Bluetooth : {name}</Text>
@@ -907,6 +561,7 @@ const styles = StyleSheet.create({
   },
   textLabel: {
     color: 'white',
+    opacity: 0,
   },
 
   container: {
