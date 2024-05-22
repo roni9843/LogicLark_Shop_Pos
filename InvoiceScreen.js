@@ -51,25 +51,6 @@ const InvoiceScreen = ({onBack}) => {
     getValueFromLocalStorage();
   }, []);
 
-  // ? handle back start
-
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      handleBackPress,
-    );
-
-    return () => backHandler.remove();
-  }, []);
-
-  const handleBackPress = () => {
-    console.log('back press');
-    onBack();
-    return true; // Default behavior (exit the app)
-  };
-
-  // ? handle back end
-
   const handleSuggestionPress = (suggestion, index) => {
     const updatedProducts = [...products];
     updatedProducts[index].name = suggestion;
@@ -123,6 +104,23 @@ const InvoiceScreen = ({onBack}) => {
   }, [customerPhone]);
 
   useEffect(() => {
+    if (customerName !== '') {
+      // Assuming customersData is the array containing customer data as shown in the comment
+
+      // Find the customer with the matching phone number
+      const customer = customerInfoFetch.find(
+        customer => customer.user_name === customerName,
+      );
+
+      if (customer) {
+        setPreviousTotalDue(customer.due_amount);
+      }
+    }
+  }, [customerName]);
+
+  useEffect(() => {
+    console.log('this is customer name ');
+
     const fetchData = async () => {
       try {
         const apiUrl = await API_URL; // Await API_URL promise
@@ -156,6 +154,38 @@ const InvoiceScreen = ({onBack}) => {
           } else {
             console.error('Failed to fetch data:', response.status);
           }
+        } else if (customerName.length > 4) {
+          console.log('this is customer name 22');
+
+          const response = await fetch(`${apiUrl}/findBy1stNumber`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              firstDigits: customerName.toString(),
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+
+            console.log('Data from API:', data);
+
+            // Set users in state
+            setCustomerInfoFetch(data.users);
+
+            console.log('Data from user:', data.users);
+            console.log('Data from invoice :', data.inVoice.newInvoiceNumber);
+
+            // Set newInvoiceNumber in state
+            setInvoiceNumber(data.inVoice.newInvoiceNumber);
+
+            // Set previous phone number
+            setPrevCustomerPhone(customerPhone);
+          } else {
+            console.error('Failed to fetch data:', response.status);
+          }
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -163,7 +193,7 @@ const InvoiceScreen = ({onBack}) => {
     };
 
     fetchData();
-  }, [customerPhone, prevCustomerPhone]);
+  }, [customerPhone, prevCustomerPhone, customerName]);
 
   const updateFinalTotal = () => {
     const subtotal = calculateSubtotal();
@@ -651,14 +681,38 @@ const InvoiceScreen = ({onBack}) => {
 
   const [keyboardStatus, setKeyboardStatus] = useState('');
 
+  // ? handle back start
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackPress,
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
+  const handleBackPress = () => {
+    console.log('back press');
+    onBack();
+    return true; // Default behavior (exit the app)
+  };
+
+  // ? handle back end
+
   return (
     <View style={[styles.container]}>
       <View style={styles.header}>
-        <Text style={styles.textLabel}>Bell</Text>
+        <Text
+          style={{opacity: 1, fontSize: 18}}
+          onPress={() => handleBackPress()}>
+          👈
+        </Text>
         <Text style={styles.balanceTitle}>{userGlobalName}</Text>
-        <Text style={styles.textLabel}>User</Text>
+        <Text style={{opacity: 0}}>User</Text>
       </View>
-      <ScrollView keyboardShouldPersistTaps="handled">
+
+      <ScrollView>
         <View style={styles.container}>
           <View>
             <Text style={{color: 'black', marginVertical: 5}}>
@@ -699,7 +753,11 @@ const InvoiceScreen = ({onBack}) => {
                   color: defaultGray,
                   marginVertical: 5,
                 }}
-                onChangeText={text => setCustomerName(text)}
+                //  onChangeText={text => setCustomerName(text)}
+
+                onChangeText={text => {
+                  setCustomerName(text);
+                }}
                 value={customerName}
                 placeholder="Customer's name"
                 placeholderTextColor="#A9A9A9"
@@ -719,7 +777,9 @@ const InvoiceScreen = ({onBack}) => {
                     setCustomerName(p.user_name);
                   }}
                   style={styles.suggestionItem}>
-                  <Text>{p.user_phone}</Text>
+                  <Text style={{color: 'white'}}>
+                    {p.user_phone} - {p.user_name}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -764,7 +824,7 @@ const InvoiceScreen = ({onBack}) => {
                       key={suggestion}
                       style={styles.suggestionItem}
                       onPress={() => handleSuggestionPress(suggestion, index)}>
-                      <Text>{suggestion}</Text>
+                      <Text style={{color: 'white'}}>{suggestion}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>

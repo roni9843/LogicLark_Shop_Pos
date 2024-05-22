@@ -907,6 +907,7 @@ const styles = StyleSheet.create({
   },
   textLabel: {
     color: 'white',
+    opacity: 0,
   },
 
   container: {

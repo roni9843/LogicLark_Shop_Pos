@@ -69,7 +69,7 @@ const DueLayout = ({onBack}) => {
         const data = await response.json();
         // Handle the data received from the API
         console.log('Data from API:', data);
-        setAllUserInfo(data);
+        setAllUserInfo(data.reverse());
       } else {
         console.error('Failed to fetch data:', response.status);
       }
@@ -94,9 +94,13 @@ const DueLayout = ({onBack}) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.textLabel}>Bell</Text>
+        <Text
+          style={{opacity: 1, fontSize: 18}}
+          onPress={() => handleBackPress()}>
+          👈
+        </Text>
         <Text style={styles.balanceTitle}>{userGlobalName}</Text>
-        <Text style={styles.textLabel}>User</Text>
+        <Text style={{opacity: 0}}>User</Text>
       </View>
 
       {pageState === 'history' ? (
