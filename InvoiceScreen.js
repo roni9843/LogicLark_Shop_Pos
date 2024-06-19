@@ -732,15 +732,15 @@ const InvoiceScreen = ({onBack}) => {
                   color: defaultGray,
                   marginVertical: 5,
                 }}
+                //  onChangeText={text => setCustomerName(text)}
+
                 onChangeText={text => {
-                  // Regular expression to allow only numbers
-                  let newText = text.replace(/[^0-9]/g, '');
-                  setCustomerPhone(newText);
+                  setCustomerName(text);
                 }}
-                value={customerPhone}
-                keyboardType="decimal-pad" // Update keyboardType to "decimal-pad"
-                placeholder="Customer's phone"
+                value={customerName}
+                placeholder="Customer's name"
                 placeholderTextColor="#A9A9A9"
+                keyboardType="default" // Remove keyboardType="numeric"
               />
               <TextInput
                 style={{
@@ -753,15 +753,15 @@ const InvoiceScreen = ({onBack}) => {
                   color: defaultGray,
                   marginVertical: 5,
                 }}
-                //  onChangeText={text => setCustomerName(text)}
-
                 onChangeText={text => {
-                  setCustomerName(text);
+                  // Regular expression to allow only numbers
+                  let newText = text.replace(/[^0-9]/g, '');
+                  setCustomerPhone(newText);
                 }}
-                value={customerName}
-                placeholder="Customer's name"
+                value={customerPhone}
+                keyboardType="decimal-pad" // Update keyboardType to "decimal-pad"
+                placeholder="Customer's phone"
                 placeholderTextColor="#A9A9A9"
-                keyboardType="default" // Remove keyboardType="numeric"
               />
             </View>
 

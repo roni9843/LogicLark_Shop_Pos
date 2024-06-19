@@ -77,10 +77,20 @@ const DueHistoryScreen = ({
       style={{
         flex: 1,
         paddingHorizontal: 20,
-        paddingTop: 10,
+        paddingTop: 20,
         //   backgroundColor: '#ECEFF1',
         backgroundColor: '#fff',
       }}>
+      <Text
+        style={{
+          fontSize: 22,
+          fontWeight: 'bold',
+          marginBottom: 10,
+          color: '#000',
+        }}>
+        সার্চ করুন
+      </Text>
+
       <View
         style={{flexDirection: 'row', alignItems: 'center', marginBottom: 20}}>
         <TextInput

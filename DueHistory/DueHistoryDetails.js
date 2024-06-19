@@ -106,9 +106,9 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
         receive_id: id,
         userId: individualUserDue,
         date: new Date(),
-        received_amount: parseInt(userAmount),
-        previous_due: parseInt(userInfo?.user?.due_amount - userAmount),
-        due_history: parseInt(userInfo?.user?.due_amount),
+        received_amount: parseInt(userAmount), // new ammount
+        previous_due: parseInt(userInfo?.user?.due_amount - userAmount), // ager ammount - new ammount
+        due_history: parseInt(userInfo?.user?.due_amount), // ager ammount
       };
 
       const apiUrl = await API_URL;
@@ -489,6 +489,20 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
     await BluetoothEscposPrinter.printText('\n\r', {});
   };
 
+  const [btnState, setBtnState] = useState('none');
+  // ? add amount money
+  const [addAmount, setAddAmount] = useState('');
+
+  // ? handel add ammount
+
+  const addAmountHandle = amount => {
+    // Ensure only numeric input and up to 2 decimal places
+    if (/^\d*\.?\d{0,2}$/.test(amount) || amount === '') {
+      // Update the amount if it's valid
+      setAddAmount(amount);
+    }
+  };
+
   return (
     <ScrollView
       keyboardShouldPersistTaps="handled"
@@ -499,120 +513,278 @@ const DueHistoryDetails = ({individualUserDue, callFetchParent}) => {
       }}>
       <View
         style={{
-          backgroundColor: defaultGray, // Light golden background
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#f0f0f0',
+
+          flexDirection: 'row',
+
           borderRadius: 10,
-          marginBottom: 15,
-          // shadowColor: '#FFD600', // Golden shadow
-          // shadowOffset: {width: 0, height: 2},
-          // shadowOpacity: 0.5, // Increased shadow opacity
-          // shadowRadius: 5, // Increased shadow radius
-          //  elevation: 5,
-          padding: 15,
+          marginBottom: 20,
         }}>
-        <Text
+        <TouchableOpacity
           style={{
-            fontSize: 22,
-            fontWeight: 'bold',
-            marginBottom: 10,
-            color: '#ffff',
-          }}>
-          User Details
-        </Text>
+            backgroundColor: '#007AFF',
+            width: 150,
+            height: 40,
+            borderRadius: 8,
+            margin: 10,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: 2,
+            borderColor: '#0056b3',
+          }}
+          onPress={() => setBtnState('Add')}>
+          <Text style={{color: '#fff', fontSize: 16, fontWeight: 'bold'}}>
+            Add
+          </Text>
+        </TouchableOpacity>
 
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#FF9500',
+            width: 150,
+            height: 40,
+            borderRadius: 8,
+            margin: 10,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: 2,
+            borderColor: '#D17A00',
+          }}
+          onPress={() => setBtnState('Receive')}>
+          <Text style={{color: '#fff', fontSize: 16, fontWeight: 'bold'}}>
+            Receive
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {btnState === 'Receive' ? (
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: 10,
+            backgroundColor: '#FF9500',
+            borderRadius: 10,
+            marginBottom: 15,
+            padding: 15,
           }}>
-          <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
-            Name:
-          </Text>
-          <Text style={{flex: 2, color: '#ffff', fontWeight: 'bold'}}>
-            {userInfo?.user?.user_name ? userInfo?.user?.user_name : 'N/A'}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: 10,
-          }}>
-          <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
-            Phone Number:
-          </Text>
-          <Text style={{flex: 2, color: '#ffff', fontWeight: 'bold'}}>
-            {userInfo?.user?.user_phone ? userInfo?.user?.user_phone : 'N/A'}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: 10,
-          }}>
-          <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
-            Total Due:
-          </Text>
-          <Text style={{flex: 2, color: '#ffff'}}>
-            {userInfo?.user?.due_amount ? userInfo?.user?.due_amount : 'N/A'}{' '}
-            {userAmount && '-'} {userAmount} {userAmount && '='}{' '}
-            {userAmount && userInfo?.user?.due_amount - userAmount}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: 10,
-          }}>
-          <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
-            Received:
-          </Text>
-          <TextInput
+          <Text
             style={{
-              flex: 2,
-              borderWidth: 1,
-              borderColor: '#999',
-              padding: 8,
-              borderRadius: 5,
-              backgroundColor: '#FFF',
-              color: '#000', // Setting text color to black
-            }}
-            placeholder="Enter received amount"
-            keyboardType="numeric"
-            value={userAmount}
-            onChangeText={handleAmountChange}
-          />
-        </View>
+              fontSize: 22,
+              fontWeight: 'bold',
+              marginBottom: 10,
+              color: '#ffff',
+            }}>
+            বাকি পরিশোধ করুন
+          </Text>
 
-        {btnDisable ? (
+          {/* User details content */}
           <View
             style={{
-              flex: 1,
+              flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'center',
+              marginBottom: 10,
             }}>
-            <ActivityIndicator size="large" color={activeBtnColor} />
+            <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
+              Name:
+            </Text>
+            <Text style={{flex: 2, color: '#ffff', fontWeight: 'bold'}}>
+              {userInfo?.user?.user_name ? userInfo?.user?.user_name : 'N/A'}
+            </Text>
           </View>
-        ) : (
-          <TouchableOpacity
+
+          <View
             style={{
-              backgroundColor: activeBtnColor,
-              paddingVertical: 10,
-              borderRadius: 5,
+              flexDirection: 'row',
               alignItems: 'center',
-            }}
-            onPress={() => {
-              userAmount && sendDataToBackend();
+              marginBottom: 10,
             }}>
-            <Text style={{color: '#FFF', fontWeight: 'bold'}}>Submit</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+            <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
+              Phone Number:
+            </Text>
+            <Text style={{flex: 2, color: '#ffff', fontWeight: 'bold'}}>
+              {userInfo?.user?.user_phone ? userInfo?.user?.user_phone : 'N/A'}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}>
+            <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
+              Total Due:
+            </Text>
+            <Text style={{flex: 2, color: '#ffff'}}>
+              {userInfo?.user?.due_amount ? userInfo?.user?.due_amount : 'N/A'}{' '}
+              {userAmount && '-'} {userAmount} {userAmount && '='}{' '}
+              {userAmount && userInfo?.user?.due_amount - userAmount}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}>
+            <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
+              Received:
+            </Text>
+            <TextInput
+              style={{
+                flex: 2,
+                borderWidth: 1,
+                borderColor: '#999',
+                padding: 8,
+                borderRadius: 5,
+                backgroundColor: '#FFF',
+                color: '#000',
+              }}
+              placeholder="Enter received amount"
+              keyboardType="numeric"
+              value={userAmount}
+              onChangeText={handleAmountChange}
+            />
+          </View>
+
+          {/* Conditional rendering of submit button or activity indicator */}
+          {btnDisable ? (
+            <View
+              style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+              <ActivityIndicator size="large" color={activeBtnColor} />
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={{
+                backgroundColor: activeBtnColor,
+                paddingVertical: 10,
+                borderRadius: 5,
+                alignItems: 'center',
+              }}
+              onPress={() => {
+                userAmount && sendDataToBackend();
+              }}>
+              <Text style={{color: '#FFF', fontWeight: 'bold'}}>Submit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : btnState === 'Add' ? (
+        <View
+          style={{
+            backgroundColor: '#007AFF',
+            borderRadius: 10,
+            marginBottom: 15,
+            padding: 15,
+          }}>
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: 'bold',
+              marginBottom: 10,
+              color: '#ffff',
+            }}>
+            বাকি যুক্ত করুন
+          </Text>
+
+          {/* User details content */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}>
+            <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
+              Name:
+            </Text>
+            <Text style={{flex: 2, color: '#ffff', fontWeight: 'bold'}}>
+              {userInfo?.user?.user_name ? userInfo?.user?.user_name : 'N/A'}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}>
+            <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
+              Phone Number:
+            </Text>
+            <Text style={{flex: 2, color: '#ffff', fontWeight: 'bold'}}>
+              {userInfo?.user?.user_phone ? userInfo?.user?.user_phone : 'N/A'}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}>
+            <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
+              Total Due:
+            </Text>
+            <Text style={{flex: 2, color: '#ffff'}}>
+              {userInfo?.user?.due_amount ? userInfo?.user?.due_amount : 'N/A'}{' '}
+              {addAmount && '+'} {addAmount} {addAmount && '='}{' '}
+              {addAmount &&
+                parseInt(userInfo?.user?.due_amount) + parseInt(addAmount)}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}>
+            <Text style={{flex: 1, fontWeight: 'bold', color: '#ffff'}}>
+              Received:
+            </Text>
+            <TextInput
+              style={{
+                flex: 2,
+                borderWidth: 1,
+                borderColor: '#999',
+                padding: 8,
+                borderRadius: 5,
+                backgroundColor: '#FFF',
+                color: '#000',
+              }}
+              placeholder="Enter received amount"
+              keyboardType="numeric"
+              value={addAmount}
+              onChangeText={addAmountHandle}
+            />
+          </View>
+
+          {/* Conditional rendering of submit button or activity indicator */}
+          {btnDisable ? (
+            <View
+              style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+              <ActivityIndicator size="large" color={activeBtnColor} />
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={{
+                backgroundColor: activeBtnColor,
+                paddingVertical: 10,
+                borderRadius: 5,
+                alignItems: 'center',
+              }}
+              onPress={() => {
+                userAmount && sendDataToBackend();
+              }}>
+              <Text style={{color: '#FFF', fontWeight: 'bold'}}>Submit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <View></View>
+      )}
+
       {(!userInfo || Object.keys(userInfo).length === 0) && (
         <View
           style={{
